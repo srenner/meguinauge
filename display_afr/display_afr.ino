@@ -4,6 +4,12 @@
 //RS,EN,DB4,DB5,DB6,DB7
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
+#define REDLITE 3 
+#define GREENLITE 5 
+#define BLUELITE 6
+
+int brightness = 255;
+
 byte fill1[8] = {
   B10000,
   B10000,
@@ -67,12 +73,12 @@ void setup() {
   lcd.print("AFR");
   lcd.setCursor(0, 2);
   lcd.print("TGT");
-  lcd.setCursor(0,3);
-  lcd.write(byte(0));
-  lcd.write(byte(1));
-  lcd.write(byte(2));
-  lcd.write(byte(3));
-  lcd.write(byte(4));
+
+  pinMode(REDLITE, OUTPUT); 
+  pinMode(GREENLITE, OUTPUT); 
+  pinMode(BLUELITE, OUTPUT);
+  
+  setBacklight(255, 0, 0);
 }
 
 void loop() {
@@ -87,7 +93,7 @@ void loop() {
   //lcd.setCursor(16,0);
   //lcd.print("Rich");
   draw_afr_bar(afr, 1);
-  draw_afr_bar(tgt, 3);
+  draw_afr_bar(tgt, 3);  
 }
 
 void draw_afr_bar(double value, int row) {
@@ -107,5 +113,21 @@ void draw_afr_bar(double value, int row) {
     lcd.write(byte(partialBars - 1));    
   }
   
+}
+
+void setBacklight(uint8_t r, uint8_t g, uint8_t b) {
+  // normalize the red LED - its brighter than the rest! 
+  r = map(r, 0, 255, 0, 100);
+  g = map(g, 0, 255, 0, 150);
+  r = map(r, 0, 255, 0, brightness); 
+  g = map(g, 0, 255, 0, brightness); 
+  b = map(b, 0, 255, 0, brightness);
+  // common anode so invert!
+  r = map(r, 0, 255, 255, 0);
+  g = map(g, 0, 255, 255, 0);
+  b = map(b, 0, 255, 255, 0);
+  analogWrite(REDLITE, r); 
+  analogWrite(GREENLITE, g); 
+  analogWrite(BLUELITE, b);
 }
 
