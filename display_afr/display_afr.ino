@@ -82,7 +82,7 @@ void setup() {
 }
 
 void loop() {
-  double afr = 13.5;
+  double afr = 12.5;
   double tgt = 14.7;
   
   lcd.setCursor(4, 0);
@@ -92,13 +92,16 @@ void loop() {
   
   //lcd.setCursor(16,0);
   //lcd.print("Rich");
-  draw_afr_bar(afr, 1);
-  draw_afr_bar(tgt, 3);  
+  draw_bar(afr, 1, 10, 20);
+  draw_bar(tgt, 3, 10, 20);
 }
 
-void draw_afr_bar(double value, int row) {
+void draw_bar(double value, int row, double minimum, double maximum) {
   lcd.setCursor(0, row);
-  int bars = round((value - 10.0) / 10.0 * 100);
+  //int bars = round((value - 10.0) / 10.0 * 100);
+
+  int bars = ((value - minimum) * 100) / (maximum - minimum);
+  
   int fullBars = bars/5;
   
   int partialBars = bars % 5;
