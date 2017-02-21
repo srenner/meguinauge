@@ -98,24 +98,16 @@ void loop() {
 
 void draw_bar(double value, int row, double minimum, double maximum) {
   lcd.setCursor(0, row);
-  //int bars = round((value - 10.0) / 10.0 * 100);
-
   int bars = ((value - minimum) * 100) / (maximum - minimum);
-  
   int fullBars = bars/5;
-  
   int partialBars = bars % 5;
-  //lcd.setCursor(14, row);
-  //lcd.print(bars);
   lcd.setCursor(0, row);
-
   for(int i = 0; i < fullBars; i++) {
     lcd.write(byte(4));
   }
   if(partialBars > 0) {
     lcd.write(byte(partialBars - 1));    
   }
-  
 }
 
 void setBacklight(uint8_t r, uint8_t g, uint8_t b) {
