@@ -177,7 +177,7 @@ int ecu_req()
   // Prepair message
   message.id = 5E8;
   message.header.rtr = 0;
-  message.header.length = 11;
+  message.header.length = 8;
   message.data[0] = 0x02;
   message.data[1] = 0x01;
   message.data[2] = 0x5e8; //MegaSquirt base identifier
