@@ -175,7 +175,7 @@ int ecu_req()
   int timeout = 0;
   char message_ok = 0;
   // Prepair message
-  message.id = 5E8;
+  message.id = 0x7D0; //id of 2000, lower priority than other node
   message.header.rtr = 0;
   message.header.length = 8;
   message.data[0] = 0x02;
