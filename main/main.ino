@@ -106,7 +106,7 @@ void setup() {
   Serial.begin(9600);
 
   //int canbusSpeed = Canbus.init(-1); 
-  int can_init = mcp2515_init(CANSPEED_500); //CANSPEED_500 = 1
+  int can_init = mcp2515_init(1); //CANSPEED_500 = 1
 
   //int msg = mcp2515_check_message();
   
@@ -175,21 +175,21 @@ int ecu_req()
   int timeout = 0;
   char message_ok = 0;
   // Prepair message
-  message.id = 0x7D0; //id of 2000, lower priority than other node
-  message.header.rtr = 0;
+  message.id = 0x5e8; //0x5e8; //0x7D0; //id of 2000, lower priority than other node
+  message.header.rtr = 1;
   message.header.length = 8;
-  message.data[0] = 0x02;
-  message.data[1] = 0x01;
+  /*message.data[0] = 0x00;
+  message.data[1] = 0x00;
   message.data[2] = 0x5e8; //MegaSquirt base identifier
   message.data[3] = 0x00;
   message.data[4] = 0x00;
   message.data[5] = 0x00;
   message.data[6] = 0x00;
-  message.data[7] = 0x00;
+  message.data[7] = 0x00;*/
 
   mcp2515_bit_modify(CANCTRL, (1<<REQOP2)|(1<<REQOP1)|(1<<REQOP0), 0);
   
-  if(mcp2515_send_message(&message)) {
+  /*if(mcp2515_send_message(&message)) {
     Serial.println("send_message true");
   }
   else {
@@ -197,17 +197,30 @@ int ecu_req()
   }
   if (mcp2515_check_message()) {
     Serial.println("check_message success");
-    if (mcp2515_get_message(&message)) {
-      Serial.println("get_message success");
-      Serial.print("message: ");
-      Serial.println(message.data[0]);
-      return (int)message.data[3];
-    }
+    
   }
   else {
     Serial.println("check_message false");
   }
-  delay(1500);
+*/
+  if (mcp2515_get_message(&message)) {
+    Serial.println("get_message success");
+    Serial.print("message: ");
+    Serial.println(message.data[0]);
+    return (int)message.data[3];
+  }
+  else {
+    Serial.println("get_message false");
+    Serial.println(message.data[0]);
+    Serial.println(message.data[1]);
+    Serial.println(message.data[2]);
+    Serial.println(message.data[3]);
+    Serial.println(message.data[4]);
+    Serial.println(message.data[5]);
+    Serial.println(message.data[6]);
+    Serial.println(message.data[7]);
+  }
+  delay(5000);
 }
 
 
