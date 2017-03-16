@@ -103,28 +103,20 @@ void setup() {
   pinMode(BLUELITE, OUTPUT);
   setBacklight(255, 0, 0);
 
-  Serial.begin(9600);
-
-  //int canbusSpeed = Canbus.init(-1); 
+  //Serial.begin(115200);
   int can_init = mcp2515_init(1); //CANSPEED_500 = 1
 
-  //int msg = mcp2515_check_message();
-  
-  Serial.println(can_init);
 }
 
 void loop() {
 
-
-  char message = ecu_req();
-  //Serial.println(message);
-  delay(1500);
-
-
-
+  tCAN message;
+  ecu_req(&message);
+  double tgt = (double)message.data[0] / 10.0;
+  double afr = (double)message.data[1] / 10.0;
   
-  double afr = 12.5;
-  double tgt = 14.7;
+  //double afr = 12.5;
+  //double tgt = 14.7;
   
   lcd.setCursor(4, 0);
   lcd.print(afr);
@@ -133,6 +125,7 @@ void loop() {
   
   draw_bar(afr, 1, 10, 20);
   draw_bar(tgt, 3, 10, 20);
+  delay(500);
 }
 
 void draw_bar(double value, int row, double minimum, double maximum) {
@@ -168,61 +161,25 @@ void setBacklight(uint8_t r, uint8_t g, uint8_t b) {
 
 
 
-int ecu_req() 
+void ecu_req(tCAN *message) 
 {
-  tCAN message;
+  //tCAN message;
   float engine_data;
   int timeout = 0;
   char message_ok = 0;
   // Prepair message
-  message.id = 0x5e8; //0x5e8; //0x7D0; //id of 2000, lower priority than other node
-  message.header.rtr = 1;
-  message.header.length = 8;
-  /*message.data[0] = 0x00;
-  message.data[1] = 0x00;
-  message.data[2] = 0x5e8; //MegaSquirt base identifier
-  message.data[3] = 0x00;
-  message.data[4] = 0x00;
-  message.data[5] = 0x00;
-  message.data[6] = 0x00;
-  message.data[7] = 0x00;*/
+  message->id = 0x5ea; //group 1514 //0x5e8;
+  message->header.rtr = 0;
+  message->header.length = 8;
 
   mcp2515_bit_modify(CANCTRL, (1<<REQOP2)|(1<<REQOP1)|(1<<REQOP0), 0);
   
-  /*if(mcp2515_send_message(&message)) {
-    Serial.println("send_message true");
+  if (mcp2515_get_message(message)) {
+    //Serial.println(message.data[0]);
+    //Serial.println(message.data[1]);
+    //return &message.data;
   }
   else {
-    Serial.println("send_message false");
   }
-  if (mcp2515_check_message()) {
-    Serial.println("check_message success");
-    
-  }
-  else {
-    Serial.println("check_message false");
-  }
-*/
-  if (mcp2515_get_message(&message)) {
-    Serial.println("get_message success");
-    Serial.print("message: ");
-    Serial.println(message.data[0]);
-    return (int)message.data[3];
-  }
-  else {
-    Serial.println("get_message false");
-    Serial.println(message.data[0]);
-    Serial.println(message.data[1]);
-    Serial.println(message.data[2]);
-    Serial.println(message.data[3]);
-    Serial.println(message.data[4]);
-    Serial.println(message.data[5]);
-    Serial.println(message.data[6]);
-    Serial.println(message.data[7]);
-  }
-  delay(5000);
 }
-
-
-
 
