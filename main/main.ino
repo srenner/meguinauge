@@ -6,12 +6,13 @@
 #include <LiquidCrystal.h>
 #include <math.h>
 
-//RS,EN,DB4,DB5,DB6,DB7
-LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+//RS(4),EN(6),DB4(11),DB5(12),DB6(13),DB7(14)
+//                7  8  9  10  11  12
+LiquidCrystal lcd(14, 3, 4, 5, 6, 7);
 
-#define REDLITE 3 
-#define GREENLITE 5 
-#define BLUELITE 6
+//#define REDLITE 3 
+//#define GREENLITE 5 
+//#define BLUELITE 6
 
 int brightness = 255;
 
@@ -98,10 +99,10 @@ void setup() {
   lcd.setCursor(0, 2);
   lcd.print("TGT");
 
-  pinMode(REDLITE, OUTPUT); 
-  pinMode(GREENLITE, OUTPUT); 
-  pinMode(BLUELITE, OUTPUT);
-  setBacklight(255, 0, 0);
+  //pinMode(REDLITE, OUTPUT); 
+  //pinMode(GREENLITE, OUTPUT); 
+  //pinMode(BLUELITE, OUTPUT);
+  //setBacklight(255, 0, 0);
 
   //Serial.begin(115200);
   int can_init = mcp2515_init(1); //CANSPEED_500 = 1
@@ -117,15 +118,28 @@ void loop() {
   
   //double afr = 12.5;
   //double tgt = 14.7;
+  lcd.clear();
+
+  lcd.begin(20, 4);
+  lcd.print("AFR");
+  lcd.setCursor(0, 2);
+  lcd.print("TGT");
   
-  lcd.setCursor(4, 0);
-  lcd.print(afr);
-  lcd.setCursor(4, 2);
-  lcd.print(tgt);
+
   
-  draw_bar(afr, 1, 10, 20);
-  draw_bar(tgt, 3, 10, 20);
-  delay(500);
+
+  if(afr >= 10.0 && afr <= 20.0) {
+    lcd.setCursor(4, 0);
+    lcd.print(afr);
+    draw_bar(afr, 1, 10, 20);  
+  }
+  if(tgt >= 10.0 && tgt <= 20.0) {
+    lcd.setCursor(4, 2);
+    lcd.print(tgt);
+    draw_bar(tgt, 3, 10, 20);  
+  }
+  
+  delay(300);
 }
 
 void draw_bar(double value, int row, double minimum, double maximum) {
@@ -153,9 +167,9 @@ void setBacklight(uint8_t r, uint8_t g, uint8_t b) {
   r = map(r, 0, 255, 255, 0);
   g = map(g, 0, 255, 255, 0);
   b = map(b, 0, 255, 255, 0);
-  analogWrite(REDLITE, r); 
-  analogWrite(GREENLITE, g); 
-  analogWrite(BLUELITE, b);
+  //analogWrite(REDLITE, r); 
+  //analogWrite(GREENLITE, g); 
+  //analogWrite(BLUELITE, b);
 }
 
 
