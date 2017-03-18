@@ -6,13 +6,8 @@
 #include <LiquidCrystal.h>
 #include <math.h>
 
-//RS(4),EN(6),DB4(11),DB5(12),DB6(13),DB7(14)
-//                7  8  9  10  11  12
+//RS,EN,DB4,DB5,DB6,DB7
 LiquidCrystal lcd(14, 3, 4, 5, 6, 7);
-
-//#define REDLITE 3 
-//#define GREENLITE 5 
-//#define BLUELITE 6
 
 int brightness = 255;
 
@@ -67,10 +62,6 @@ byte fill5[8] = {
   B11111
 };
 
-
-char can_buffer[64];
-char can_data;
-
 //possible parameters to display
 double  engine_afr;         //AFR
 double  engine_afr_tgt;     //AFR target
@@ -84,9 +75,7 @@ int     engine_clt;         //coolant temp
 int     engine_iat;         //intake air temp
 
 
-
 void setup() {
-
 
   lcd.createChar(0, fill1);
   lcd.createChar(1, fill2);
@@ -99,14 +88,8 @@ void setup() {
   lcd.setCursor(0, 2);
   lcd.print("TGT");
 
-  //pinMode(REDLITE, OUTPUT); 
-  //pinMode(GREENLITE, OUTPUT); 
-  //pinMode(BLUELITE, OUTPUT);
-  //setBacklight(255, 0, 0);
-
   //Serial.begin(115200);
   int can_init = mcp2515_init(1); //CANSPEED_500 = 1
-
 }
 
 void loop() {
@@ -125,9 +108,6 @@ void loop() {
   lcd.setCursor(0, 2);
   lcd.print("TGT");
   
-
-  
-
   if(afr >= 10.0 && afr <= 20.0) {
     lcd.setCursor(4, 0);
     lcd.print(afr);
@@ -156,32 +136,8 @@ void draw_bar(double value, int row, double minimum, double maximum) {
   }
 }
 
-void setBacklight(uint8_t r, uint8_t g, uint8_t b) {
-  // normalize the red LED - its brighter than the rest! 
-  r = map(r, 0, 255, 0, 100);
-  g = map(g, 0, 255, 0, 150);
-  r = map(r, 0, 255, 0, brightness); 
-  g = map(g, 0, 255, 0, brightness); 
-  b = map(b, 0, 255, 0, brightness);
-  // common anode so invert!
-  r = map(r, 0, 255, 255, 0);
-  g = map(g, 0, 255, 255, 0);
-  b = map(b, 0, 255, 255, 0);
-  //analogWrite(REDLITE, r); 
-  //analogWrite(GREENLITE, g); 
-  //analogWrite(BLUELITE, b);
-}
-
-
-
-
 void ecu_req(tCAN *message) 
 {
-  //tCAN message;
-  float engine_data;
-  int timeout = 0;
-  char message_ok = 0;
-  // Prepair message
   message->id = 0x5ea; //group 1514 //0x5e8;
   message->header.rtr = 0;
   message->header.length = 8;
