@@ -62,18 +62,20 @@ byte fill5[8] = {
   B11111
 };
 
-//possible parameters to display
-double  engine_afr;         //AFR
-double  engine_afr_tgt;     //AFR target
-double  engine_map;         //MAP sensor
-double  engine_boost;       //boost (psi) calculated from map value
-double  engine_adv;         //ignition advance
-int     engine_rpm;         //RPM
-int     engine_tps;         //throttle position
-double  engine_vbat;        //battery voltage
-int     engine_clt;         //coolant temp
-int     engine_iat;         //intake air temp
+long startTime;
+long endTime;
 
+double afr;
+double tgt;
+
+unsigned long interval = 100;
+unsigned long lastMillis = 0;
+unsigned long currentMillis = 0;
+
+tCAN message;
+int messageReceived;
+
+tCAN emtpyMessage;
 
 void setup() {
 
@@ -88,38 +90,33 @@ void setup() {
   lcd.setCursor(0, 2);
   lcd.print("TGT");
 
-  //Serial.begin(115200);
+  Serial.begin(115200);
   int can_init = mcp2515_init(1); //CANSPEED_500 = 1
 }
 
 void loop() {
 
-  tCAN message;
   ecu_req(&message);
-  double tgt = (double)message.data[0] / 10.0;
-  double afr = (double)message.data[1] / 10.0;
   
-  //double afr = 12.5;
-  //double tgt = 14.7;
-  lcd.clear();
+  currentMillis = millis();
 
-  lcd.begin(20, 4);
-  lcd.print("AFR");
-  lcd.setCursor(0, 2);
-  lcd.print("TGT");
-  
-  if(afr >= 10.0 && afr <= 20.0) {
-    lcd.setCursor(4, 0);
-    lcd.print(afr);
-    draw_bar(afr, 1, 10, 20);  
+  if(messageReceived == 1) {
+    if(currentMillis - lastMillis >= interval) {
+      Serial.println("===screen refresh===");
+      lastMillis = currentMillis;
+      lcd.setCursor(4, 2);
+      lcd.print(tgt);
+      Serial.print("===screen refresh===");
+      Serial.println(tgt);
+      
+    }
+    messageReceived = 0;    
   }
-  if(tgt >= 10.0 && tgt <= 20.0) {
-    lcd.setCursor(4, 2);
-    lcd.print(tgt);
-    draw_bar(tgt, 3, 10, 20);  
-  }
+
   
-  delay(300);
+  
+
+  
 }
 
 void draw_bar(double value, int row, double minimum, double maximum) {
@@ -143,13 +140,26 @@ void ecu_req(tCAN *message)
   message->header.length = 8;
 
   mcp2515_bit_modify(CANCTRL, (1<<REQOP2)|(1<<REQOP1)|(1<<REQOP0), 0);
-  
-  if (mcp2515_get_message(message)) {
-    //Serial.println(message.data[0]);
-    //Serial.println(message.data[1]);
-    //return &message.data;
+  //Serial.println("trying to get data");
+  if(mcp2515_check_message()) {
+    
+    Serial.print("there is a message ");
+    mcp2515_get_message(message);
+    
+    if(message->data[0] >= 100) {
+        tgt = (double)message->data[0] / 10.0;
+        Serial.print("good data ");
+        Serial.println(tgt);
+    }
+    else {
+      Serial.println("bad data ");
+    }
+    
+    messageReceived = 1;
   }
   else {
+    messageReceived = 0;
   }
+
 }
 
