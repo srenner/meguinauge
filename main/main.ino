@@ -1,8 +1,8 @@
-#include <Canbus.h>
-#include <defaults.h>
+#include <mcp_can.h>
+#include <mcp_can_dfs.h>
+
+
 #include <global.h>
-#include <mcp2515.h>
-#include <mcp2515_defs.h>
 #include <LiquidCrystal.h>
 #include <math.h>
 
@@ -72,13 +72,14 @@ unsigned long interval = 100;
 unsigned long lastMillis = 0;
 unsigned long currentMillis = 0;
 
-tCAN message;
 int messageReceived;
-
-tCAN emtpyMessage;
 
 unsigned long goodDataCount = 0;
 unsigned long badDataCount = 0;
+
+const int SPI_CS_PIN = 10;
+
+MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
 
@@ -94,14 +95,66 @@ void setup() {
   lcd.print("TGT");
 
   Serial.begin(115200);
-  int can_init = mcp2515_init(1); //CANSPEED_500 = 1
+  while (CAN_OK != CAN.begin(CAN_500KBPS))              // init can bus : baudrate = 500k
+      {
+          Serial.println("CAN BUS Shield init fail");
+          Serial.println(" Init CAN BUS Shield again");
+          delay(100);
+      }
+  Serial.println("CAN BUS Shield init ok!");
 }
 
 void loop() {
 
-  ecu_req(&message);
+  //message->id = 0x5ea; //group 1514 //0x5e8;
+  //message->header.rtr = 0;
+  //message->header.length = 8;
   
   currentMillis = millis();
+  if(currentMillis - lastMillis >= interval) {
+    lastMillis = currentMillis;
+    lcd.setCursor(4, 2);
+    lcd.print(tgt);
+    draw_bar(tgt, 3, 10.0, 20.0);
+
+    lcd.setCursor(4, 0);
+    lcd.print(afr);
+    draw_bar(afr, 1, 10.0, 20.0);
+    
+    //Serial.println(tgt);
+    //Serial.println((double)badDataCount / (double)goodDataCount);
+      
+  }
+
+  unsigned char len = 0;
+  unsigned char buf[8];
+
+
+  if(CAN_MSGAVAIL == CAN.checkReceive())            // check if data coming
+  {
+        CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
+
+        unsigned int canId = CAN.getCanId();
+        
+
+
+        if(canId == 1514) {
+          Serial.println("-----------------------------");
+          Serial.print("Get data from ID: ");
+          Serial.println(canId, HEX);
+          tgt = (double)buf[0] / 10.0;
+          afr = (double)buf[1] / 10.0;
+          for(int i = 0; i<2; i++)    // print the data
+          {
+              Serial.print(buf[i]);
+              Serial.print("\t");
+          }
+          Serial.println();          
+        }
+
+
+  }
+
 
   if(messageReceived == 1) {
     if(currentMillis - lastMillis >= interval) {
@@ -123,6 +176,8 @@ void loop() {
 
 void draw_bar(double value, int row, double minimum, double maximum) {
   lcd.setCursor(0, row);
+  lcd.write("                    ");
+  lcd.setCursor(0, row);
   int bars = ((value - minimum) * 100) / (maximum - minimum);
   int fullBars = bars/5;
   int partialBars = bars % 5;
@@ -133,38 +188,5 @@ void draw_bar(double value, int row, double minimum, double maximum) {
   if(partialBars > 0) {
     lcd.write(byte(partialBars - 1));    
   }
-}
-
-void ecu_req(tCAN *message) 
-{
-  message->id = 0x5ea; //group 1514 //0x5e8;
-  message->header.rtr = 0;
-  message->header.length = 8;
-
-  mcp2515_bit_modify(CANCTRL, (1<<REQOP2)|(1<<REQOP1)|(1<<REQOP0), 0);
-  //Serial.println("trying to get data");
-  if(mcp2515_check_message()) {
-    
-    //Serial.print("there is a message ");
-    mcp2515_get_message(message);
-    
-    if(message->data[0] >= 100) {
-        tgt = (double)message->data[0] / 10.0;
-        //Serial.print("good data ");
-        //Serial.println(tgt);
-        goodDataCount++;
-    }
-    else {
-      ///Serial.println("bad data ");
-      badDataCount++;
-    }
-    
-    messageReceived = 1;
-  }
-  else {
-    messageReceived = 0;
-    //Serial.println("no data");
-  }
-
 }
 
