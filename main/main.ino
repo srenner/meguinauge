@@ -62,6 +62,40 @@ byte fill5[8] = {
   B11111
 };
 
+struct EngineVariable
+{
+  char shortLabel;
+  char longLabel;
+  double currentValue;
+  double previousValue;
+  double minimum;
+  double maximum;
+  char unit;
+};
+
+EngineVariable engine_map   = {"MAP", "MAP", 0.0, 0.0, 10.0, 250.0, "KPA"};
+EngineVariable calc_vac     = {"VAC", "VACUUM", 0.0, 0.0, -200.0, 100.0, "HG"};           
+EngineVariable calc_bst     = {"BST", "BOOST", 0.0, 0.0, 0.0, 50.0, "PSI"};       
+EngineVariable engine_rpm   = {"RPM", "RPM", 0.0, 0.0, 0.0, 6500.0, ""};                
+EngineVariable engine_clt   = {"CLT", "TEMP", 0.0, 0.0, 20.0, 250.0, ""};               
+EngineVariable engine_tps   = {"TPS", "THROTTLE", 0.0, 0.0, 0.0, 100.0, "%"};   
+EngineVariable engine_pw1   = {"PW1", "PULSE WIDTH 1", 0.0, 0.0, 0.0, 50.0, "MS"};        
+EngineVariable engine_pw2   = {"PW2", "PULSE WIDTH 2", 0.0, 0.0, 0.0, 50.0, "MS"};        
+EngineVariable engine_iat   = {"IAT", "AIR TEMP", 0.0, 0.0, 20.0, 150.0, ""};     
+EngineVariable engine_adv   = {"ADV", "ADVANCE", 0.0, 0.0, 10.0, 60.0, "DEG"};
+EngineVariable engine_tgt   = {"TGT", "AIR FUEL TARGET", 0.0, 0.0, 10.0, 20.0, ""};
+EngineVariable engine_afr   = {"AFR", "AIR FUEL RATIO", 0.0, 0.0, 10.0, 20.0, ""};
+EngineVariable engine_ego   = {"EGO", "EGO CORRECTION", 0.0, 0.0, 0.0, 100.0, "%"};
+EngineVariable engine_egt   = {"EGT", "EXHAUST TEMP", 0.0, 0.0, 20.0, 2000.0, ""};
+EngineVariable engine_pws   = {"PWS", "PULSE WIDTH SEQ", 0.0, 0.0, 0.0, 50.0, "MS"};
+EngineVariable engine_bat   = {"BAT", "BATTERY", 0.0, 0.0, 0.0, 20.0, "V"};
+EngineVariable engine_sr1   = {"SR1", "SENSOR 1", 0.0, 0.0, 0.0, 10000.0, ""};
+EngineVariable engine_sr2   = {"SR2", "SENSOR 2", 0.0, 0.0, 0.0, 10000.0, ""};
+EngineVariable engine_knk   = {"KNK", "KNOCK RTD", 0.0, 0.0, 0.0, 50.0, "DEG"};
+EngineVariable engine_vss   = {"VSS", "SPEED", 0.0, 0.0, 0.0, 300.0, "MPH"};
+EngineVariable engine_tcr   = {"TCR", "TRACTION RTD", 0.0, 0.0, 0.0, 50.0, "DEG"};
+EngineVariable engine_lct   = {"LCT", "LAUNCH CTRL", 0.0, 0.0, 0.0, 100.0, "DEG"};
+
 long startTime;
 long endTime;
 
@@ -114,12 +148,12 @@ void loop() {
   if(currentMillis - lastMillis >= interval) {
     lastMillis = currentMillis;
     lcd.setCursor(4, 2);
-    lcd.print(tgt);
-    draw_bar(tgt, 3, 10.0, 20.0);
+    lcd.print(engine_tgt.currentValue);
+    draw_bar(engine_tgt.currentValue, 3, 10.0, 20.0);
 
     lcd.setCursor(4, 0);
-    lcd.print(afr);
-    draw_bar(afr, 1, 10.0, 20.0);
+    lcd.print(engine_afr.currentValue);
+    draw_bar(engine_afr.currentValue, 1, 10.0, 20.0);
     
     //Serial.println(tgt);
     //Serial.println((double)badDataCount / (double)goodDataCount);
@@ -136,8 +170,16 @@ void loop() {
 
         unsigned int canId = CAN.getCanId();
         
-
-
+        switch(canId) {
+          case 1514:
+            engine_tgt.currentValue = (double)buf[0] / 10.0;
+            engine_afr.currentValue = (double)buf[1] / 10.0;
+            break;
+          default:
+            //do nothing
+            break;
+        }
+          /*
         if(canId == 1514) {
           Serial.println("-----------------------------");
           Serial.print("Get data from ID: ");
@@ -151,6 +193,7 @@ void loop() {
           }
           Serial.println();          
         }
+        */
 
 
   }
