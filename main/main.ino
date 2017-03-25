@@ -165,17 +165,24 @@ void loop() {
         
         switch(canId) {
           case 1512:
+            engine_map.previousValue = engine_map.currentValue;
             engine_map.currentValue = ((buf[0] * 256) + buf[1]) / 10.0;
+
+            engine_map.previousValue = engine_map.currentValue;
             engine_rpm.currentValue = buf[2] * 256 + buf[3];
+
+            engine_clt.previousValue = engine_clt.currentValue;
             engine_clt.currentValue = (buf[4] * 256 + buf[5]) / 10;
-            Serial.println(engine_clt.currentValue);
+            
             break;
           case 1513:
 
             break;
           case 1514:
-            //Serial.println("found tgt/afr");
+            engine_tgt.previousValue = engine_tgt.currentValue;
             engine_tgt.currentValue = (double)buf[0] / 10.0;
+
+            engine_afr.previousValue = engine_afr.currentValue;
             engine_afr.currentValue = (double)buf[1] / 10.0;
             break;
           case 1515:
@@ -194,25 +201,40 @@ void loop() {
 }
 
 void draw_bar(EngineVariable engineVar, int row) {
-  lcd.setCursor(0, row);
-  lcd.write("                    ");
-  lcd.setCursor(0, row);
-  int bars = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
-  int fullBars = bars/5;
-  int partialBars = bars % 5;
 
-  //prevent graph overrun
-  if(fullBars >= 20) {
-    fullBars = 20;
-    partialBars = 0;
+
+  if(engineVar.currentValue == engineVar.previousValue) {
+    //relax homeboy
   }
+  else{
+    lcd.setCursor(0, row);
+    
+    //delete previous bar if it is too long
+    //todo optimize to only delete the needful
+    if(engineVar.currentValue < engineVar.previousValue) {
+      lcd.write("                    ");
+      lcd.setCursor(0, row);
+    }
+    
+    int bars = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
+    int fullBars = bars/5;
+    int partialBars = bars % 5;
   
-  lcd.setCursor(0, row);
-  for(int i = 0; i < fullBars; i++) {
-    lcd.write(byte(4));
+    //prevent graph overrun
+    if(fullBars >= 20) {
+      fullBars = 20;
+      partialBars = 0;
+    }
+    
+    lcd.setCursor(0, row);
+    for(int i = 0; i < fullBars; i++) {
+      lcd.write(byte(4));
+    }
+    if(partialBars > 0) {
+      lcd.write(byte(partialBars - 1));    
+    }  
   }
-  if(partialBars > 0) {
-    lcd.write(byte(partialBars - 1));    
-  }
+
+  
 }
 
