@@ -140,10 +140,6 @@ void setup() {
 
 void loop() {
 
-  //message->id = 0x5ea; //group 1514 //0x5e8;
-  //message->header.rtr = 0;
-  //message->header.length = 8;
-  
   currentMillis = millis();
   if(currentMillis - lastMillis >= interval) {
     lastMillis = currentMillis;
@@ -155,9 +151,6 @@ void loop() {
     lcd.print(engine_afr.currentValue);
     draw_bar(engine_afr.currentValue, 1, 10.0, 20.0);
     
-    //Serial.println(tgt);
-    //Serial.println((double)badDataCount / (double)goodDataCount);
-      
   }
 
   unsigned char len = 0;
@@ -171,48 +164,27 @@ void loop() {
         unsigned int canId = CAN.getCanId();
         
         switch(canId) {
+          case 1512:
+
+            break;
+          case 1513:
+
+            break;
           case 1514:
             engine_tgt.currentValue = (double)buf[0] / 10.0;
             engine_afr.currentValue = (double)buf[1] / 10.0;
+            break;
+          case 1515:
+
+            break;
+          case 1516:
+
             break;
           default:
             //do nothing
             break;
         }
-          /*
-        if(canId == 1514) {
-          Serial.println("-----------------------------");
-          Serial.print("Get data from ID: ");
-          Serial.println(canId, HEX);
-          tgt = (double)buf[0] / 10.0;
-          afr = (double)buf[1] / 10.0;
-          for(int i = 0; i<2; i++)    // print the data
-          {
-              Serial.print(buf[i]);
-              Serial.print("\t");
-          }
-          Serial.println();          
-        }
-        */
-
-
   }
-
-
-  if(messageReceived == 1) {
-    if(currentMillis - lastMillis >= interval) {
-      lastMillis = currentMillis;
-      lcd.setCursor(4, 2);
-      lcd.print(tgt);
-      //Serial.println(tgt);
-      Serial.println((double)badDataCount / (double)goodDataCount);
-      
-    }
-    messageReceived = 0;    
-  }
-
-  
-  
 
   
 }
