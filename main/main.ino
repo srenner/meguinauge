@@ -124,7 +124,7 @@ void setup() {
   lcd.createChar(4, fill5);
   
   lcd.begin(20, 4);
-  lcd.print("MAP");
+  lcd.print("RPM");
   lcd.setCursor(0, 2);
   lcd.print("TGT");
 
@@ -148,8 +148,8 @@ void loop() {
     draw_bar(engine_tgt.currentValue, 3, 10.0, 20.0);
 
     lcd.setCursor(4, 0);
-    lcd.print(engine_map.currentValue);
-    draw_bar(engine_map.currentValue, 1, 97.0, 99.0);
+    lcd.print(engine_rpm.currentValue);
+    draw_bar(engine_rpm.currentValue, 1, 0.0, 6500.0);
     
   }
 
@@ -166,8 +166,8 @@ void loop() {
         switch(canId) {
           case 1512:
             engine_map.currentValue = ((buf[0] * 256) + buf[1]) / 10.0;
-            //Serial.println(buf[1]);
-            //Serial.println("=====");
+            engine_rpm.currentValue = buf[2] * 256 + buf[3];
+            Serial.println(engine_rpm.currentValue);
             break;
           case 1513:
 
