@@ -211,7 +211,6 @@ void loop() {
             engine_ego.previousValue = engine_ego.currentValue;
             engine_ego.currentValue = (buf[2] * 256 + buf[3]) / 10.0;
 
-            //not fully tested
             engine_egt.previousValue = engine_egt.currentValue;
             engine_egt.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
 
@@ -223,10 +222,31 @@ void loop() {
             engine_bat.previousValue = engine_bat.currentValue;
             engine_bat.currentValue = (buf[0] * 256 + buf[1]) / 10.0;
 
-            
+            //not tested
+            engine_sr1.previousValue = engine_sr1.currentValue;
+            engine_sr1.currentValue = (buf[2] * 256 + buf[3]) / 10.0;
+
+            //not tested
+            engine_sr2.previousValue = engine_sr2.currentValue;
+            engine_sr2.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
+
+            //not tested
+            engine_knk.previousValue = engine_knk.currentValue;
+            engine_knk.currentValue = (buf[6] * 256) / 10.0;
+
             break;
           case 1516:
+            //not tested
+            engine_vss.previousValue = engine_vss.currentValue;
+            engine_vss.currentValue = (buf[0] * 256 + buf[1]) / 10.0;
 
+            //not tested
+            engine_tcr.previousValue = engine_tcr.currentValue;
+            engine_tcr.currentValue = (buf[2] * 256 + buf[3]) / 10.0;
+
+            engine_lct.previousValue = engine_lct.currentValue;
+            engine_lct.previousValue = (buf[4] * 256 + buf[5]) / 10.0;
+            
             break;
           default:
             //do nothing
