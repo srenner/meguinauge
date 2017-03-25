@@ -65,7 +65,7 @@ byte fill5[8] = {
 struct EngineVariable
 {
   String shortLabel;
-  String longLabel;
+  //String longLabel;
   double currentValue;
   double previousValue;
   double minimum;
@@ -73,28 +73,28 @@ struct EngineVariable
   char unit;
 };
 
-EngineVariable engine_map   = {"MAP", "MAP", 0.0, 0.0, 10.0, 250.0, "KPA"};
-EngineVariable calc_vac     = {"VAC", "VACUUM", 0.0, 0.0, -200.0, 100.0, "HG"};           
-EngineVariable calc_bst     = {"BST", "BOOST", 0.0, 0.0, 0.0, 50.0, "PSI"};       
-EngineVariable engine_rpm   = {"RPM", "RPM", 0.0, 0.0, 0.0, 6500.0, ""};                
-EngineVariable engine_clt   = {"CLT", "TEMP", 0.0, 0.0, 160.0, 240.0, ""};               
-EngineVariable engine_tps   = {"TPS", "THROTTLE", 0.0, 0.0, 0.0, 100.0, "%"};   
-EngineVariable engine_pw1   = {"PW1", "PULSE WIDTH 1", 0.0, 0.0, 0.0, 50.0, "MS"};        
-EngineVariable engine_pw2   = {"PW2", "PULSE WIDTH 2", 0.0, 0.0, 0.0, 50.0, "MS"};        
-EngineVariable engine_iat   = {"IAT", "AIR TEMP", 0.0, 0.0, 20.0, 150.0, ""};     
-EngineVariable engine_adv   = {"ADV", "ADVANCE", 0.0, 0.0, 10.0, 60.0, "DEG"};
-EngineVariable engine_tgt   = {"TGT", "AIR FUEL TARGET", 0.0, 0.0, 10.0, 20.0, ""};
-EngineVariable engine_afr   = {"AFR", "AIR FUEL RATIO", 0.0, 0.0, 10.0, 20.0, ""};
-EngineVariable engine_ego   = {"EGO", "EGO CORRECTION", 0.0, 0.0, 0.0, 100.0, "%"};
-EngineVariable engine_egt   = {"EGT", "EXHAUST TEMP", 0.0, 0.0, 20.0, 2000.0, ""};
-EngineVariable engine_pws   = {"PWS", "PULSE WIDTH SEQ", 0.0, 0.0, 0.0, 50.0, "MS"};
-EngineVariable engine_bat   = {"BAT", "BATTERY", 0.0, 0.0, 0.0, 20.0, "V"};
-EngineVariable engine_sr1   = {"SR1", "SENSOR 1", 0.0, 0.0, 0.0, 10000.0, ""};
-EngineVariable engine_sr2   = {"SR2", "SENSOR 2", 0.0, 0.0, 0.0, 10000.0, ""};
-EngineVariable engine_knk   = {"KNK", "KNOCK RTD", 0.0, 0.0, 0.0, 50.0, "DEG"};
-EngineVariable engine_vss   = {"VSS", "SPEED", 0.0, 0.0, 0.0, 300.0, "MPH"};
-EngineVariable engine_tcr   = {"TCR", "TRACTION RTD", 0.0, 0.0, 0.0, 50.0, "DEG"};
-EngineVariable engine_lct   = {"LCT", "LAUNCH CTRL", 0.0, 0.0, 0.0, 100.0, "DEG"};
+EngineVariable engine_map   = {"MAP", 0.0, 0.0, 10.0, 250.0, "KPA"};
+EngineVariable calc_vac     = {"VAC", 0.0, 0.0, -200.0, 100.0, "HG"};           
+EngineVariable calc_bst     = {"BST", 0.0, 0.0, 0.0, 50.0, "PSI"};       
+EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, ""};                
+EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 160.0, 240.0, ""};               
+EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, "%"};   
+EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 50.0, "MS"};        
+EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 50.0, "MS"};        
+EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 20.0, 150.0, ""};     
+EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 60.0, "DEG"};
+EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, ""};
+EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, ""};
+EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 0.0, 100.0, "%"};
+EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 20.0, 2000.0, ""};
+EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 50.0, "MS"};
+EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 0.0, 20.0, "V"};
+EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 10000.0, ""};
+EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 10000.0, ""};
+EngineVariable engine_knk   = {"KNK", 0.0, 0.0, 0.0, 50.0, "DEG"};
+EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 300.0, "MPH"};
+EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, "DEG"};
+EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 100.0, "DEG"};
 
 long startTime;
 long endTime;
