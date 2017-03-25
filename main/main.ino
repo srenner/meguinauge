@@ -77,7 +77,7 @@ EngineVariable engine_map   = {"MAP", "MAP", 0.0, 0.0, 10.0, 250.0, "KPA"};
 EngineVariable calc_vac     = {"VAC", "VACUUM", 0.0, 0.0, -200.0, 100.0, "HG"};           
 EngineVariable calc_bst     = {"BST", "BOOST", 0.0, 0.0, 0.0, 50.0, "PSI"};       
 EngineVariable engine_rpm   = {"RPM", "RPM", 0.0, 0.0, 0.0, 6500.0, ""};                
-EngineVariable engine_clt   = {"CLT", "TEMP", 0.0, 0.0, 20.0, 250.0, ""};               
+EngineVariable engine_clt   = {"CLT", "TEMP", 0.0, 0.0, 160.0, 240.0, ""};               
 EngineVariable engine_tps   = {"TPS", "THROTTLE", 0.0, 0.0, 0.0, 100.0, "%"};   
 EngineVariable engine_pw1   = {"PW1", "PULSE WIDTH 1", 0.0, 0.0, 0.0, 50.0, "MS"};        
 EngineVariable engine_pw2   = {"PW2", "PULSE WIDTH 2", 0.0, 0.0, 0.0, 50.0, "MS"};        
@@ -145,11 +145,11 @@ void loop() {
     lastMillis = currentMillis;
     lcd.setCursor(4, 2);
     lcd.print(engine_tgt.currentValue);
-    draw_bar(engine_tgt.currentValue, 3, 10.0, 20.0);
+    draw_bar(engine_tgt, 3);
 
     lcd.setCursor(4, 0);
     lcd.print(engine_clt.currentValue);
-    draw_bar(engine_clt.currentValue, 1, 20.0, 250.0);
+    draw_bar(engine_clt, 1);
     
   }
 
@@ -193,13 +193,20 @@ void loop() {
   
 }
 
-void draw_bar(double value, int row, double minimum, double maximum) {
+void draw_bar(EngineVariable engineVar, int row) {
   lcd.setCursor(0, row);
   lcd.write("                    ");
   lcd.setCursor(0, row);
-  int bars = ((value - minimum) * 100) / (maximum - minimum);
+  int bars = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
   int fullBars = bars/5;
   int partialBars = bars % 5;
+
+  //prevent graph overrun
+  if(fullBars >= 20) {
+    fullBars = 20;
+    partialBars = 0;
+  }
+  
   lcd.setCursor(0, row);
   for(int i = 0; i < fullBars; i++) {
     lcd.write(byte(4));
