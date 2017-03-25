@@ -124,7 +124,7 @@ void setup() {
   lcd.createChar(4, fill5);
   
   lcd.begin(20, 4);
-  lcd.print("AFR");
+  lcd.print("MAP");
   lcd.setCursor(0, 2);
   lcd.print("TGT");
 
@@ -148,8 +148,8 @@ void loop() {
     draw_bar(engine_tgt.currentValue, 3, 10.0, 20.0);
 
     lcd.setCursor(4, 0);
-    lcd.print(engine_afr.currentValue);
-    draw_bar(engine_afr.currentValue, 1, 10.0, 20.0);
+    lcd.print(engine_map.currentValue);
+    draw_bar(engine_map.currentValue, 1, 97.0, 99.0);
     
   }
 
@@ -165,12 +165,15 @@ void loop() {
         
         switch(canId) {
           case 1512:
-
+            engine_map.currentValue = ((buf[0] * 256) + buf[1]) / 10.0;
+            //Serial.println(buf[1]);
+            //Serial.println("=====");
             break;
           case 1513:
 
             break;
           case 1514:
+            //Serial.println("found tgt/afr");
             engine_tgt.currentValue = (double)buf[0] / 10.0;
             engine_afr.currentValue = (double)buf[1] / 10.0;
             break;
