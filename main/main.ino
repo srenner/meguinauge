@@ -64,8 +64,8 @@ byte fill5[8] = {
 
 struct EngineVariable
 {
-  char shortLabel;
-  char longLabel;
+  String shortLabel;
+  String longLabel;
   double currentValue;
   double previousValue;
   double minimum;
@@ -124,7 +124,7 @@ void setup() {
   lcd.createChar(4, fill5);
   
   lcd.begin(20, 4);
-  lcd.print("RPM");
+  lcd.print(engine_clt.shortLabel);
   lcd.setCursor(0, 2);
   lcd.print("TGT");
 
@@ -139,7 +139,7 @@ void setup() {
 }
 
 void loop() {
-
+  //Serial.println(engine_clt.shortLabel);
   currentMillis = millis();
   if(currentMillis - lastMillis >= interval) {
     lastMillis = currentMillis;
@@ -148,8 +148,8 @@ void loop() {
     draw_bar(engine_tgt.currentValue, 3, 10.0, 20.0);
 
     lcd.setCursor(4, 0);
-    lcd.print(engine_rpm.currentValue);
-    draw_bar(engine_rpm.currentValue, 1, 0.0, 6500.0);
+    lcd.print(engine_clt.currentValue);
+    draw_bar(engine_clt.currentValue, 1, 20.0, 250.0);
     
   }
 
@@ -167,7 +167,8 @@ void loop() {
           case 1512:
             engine_map.currentValue = ((buf[0] * 256) + buf[1]) / 10.0;
             engine_rpm.currentValue = buf[2] * 256 + buf[3];
-            Serial.println(engine_rpm.currentValue);
+            engine_clt.currentValue = (buf[4] * 256 + buf[5]) / 10;
+            Serial.println(engine_clt.currentValue);
             break;
           case 1513:
 
