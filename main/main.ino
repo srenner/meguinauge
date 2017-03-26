@@ -163,6 +163,7 @@ void load_from_can() {
 
         engine_rpm.previousValue = engine_rpm.currentValue;
         engine_rpm.currentValue = buf[2] * 256 + buf[3];
+        engine_rpm.currentValue = 4938;
 
         engine_clt.previousValue = engine_clt.currentValue;
         engine_clt.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
@@ -239,6 +240,7 @@ void load_from_can() {
   }
 }
 
+//note: using log10 would work but this is faster
 bool is_current_value_shorter(EngineVariable engine) {
   int currentLength;
   if(engine.currentValue >= 10000) {
