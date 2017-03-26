@@ -162,8 +162,9 @@ void load_from_can() {
         engine_map.currentValue = ((buf[0] * 256) + buf[1]) / 10.0;
 
         engine_rpm.previousValue = engine_rpm.currentValue;
-        engine_rpm.currentValue = buf[2] * 256 + buf[3];
-        engine_rpm.currentValue = 4938;
+        //engine_rpm.currentValue = buf[2] * 256 + buf[3];
+        //round rpm to nearest 10
+        engine_rpm.currentValue = round((buf[2] * 256 + buf[3]) / 10) * 10;
 
         engine_clt.previousValue = engine_clt.currentValue;
         engine_clt.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
