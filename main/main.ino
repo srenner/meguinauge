@@ -100,6 +100,13 @@ unsigned long badDataCount = 0;
 const int SPI_CS_PIN = 10;
 
 EngineVariable* idleGauges[8];
+bool idleModeReady = false;
+
+enum gaugeMode {
+  idle,
+  two,
+  four
+};
 
 MCP_CAN CAN(SPI_CS_PIN); 
 
@@ -112,12 +119,18 @@ void setup() {
   lcd.createChar(4, fill5);
 
   idleGauges[0] = &engine_rpm;
-
+  idleGauges[1] = &engine_map;
+  idleGauges[2] = &engine_afr;
+  idleGauges[3] = &engine_adv;
+  idleGauges[4] = &engine_clt;
+  idleGauges[5] = &engine_iat;
+  idleGauges[6] = &engine_pw1;
+  idleGauges[7] = &engine_bat;
   
   lcd.begin(20, 4);
-  lcd.print(engine_rpm.shortLabel);
-  lcd.setCursor(0, 2);
-  lcd.print(engine_afr.shortLabel);
+  //lcd.print(engine_rpm.shortLabel);
+  //lcd.setCursor(0, 2);
+  //lcd.print(engine_afr.shortLabel);
 
   Serial.begin(115200);
   while (CAN_OK != CAN.begin(CAN_500KBPS))              // init can bus : baudrate = 500k
@@ -139,6 +152,10 @@ void loop() {
       draw_idle_gauges();      
     }
     else {
+      if(idleModeReady) {
+        lcd.clear();
+        idleModeReady = false;
+      }
       if(engine_rpm.currentValue != engine_rpm.previousValue) {
         lcd.setCursor(4, 0);
         if(is_current_value_shorter(engine_rpm)) {
@@ -157,20 +174,20 @@ void loop() {
   }
 }
 
-void draw_idle_gauges() {
-
-  //todo only draw this the first time we enter idle mode
-  if(true) {
+void start_idle_mode() {
     lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(engine_rpm.shortLabel);
-    lcd.setCursor(0, 1);
-    lcd.print(engine_map.shortLabel);
-    lcd.setCursor(0, 2);
-    lcd.print(engine_afr.shortLabel);
-    lcd.setCursor(0, 3);
-    lcd.print(engine_bat.shortLabel);
 
+    //left column of labels
+    lcd.setCursor(0, 0);
+    lcd.print(idleGauges[0]->shortLabel);
+    lcd.setCursor(0, 1);
+    lcd.print(idleGauges[1]->shortLabel);
+    lcd.setCursor(0, 2);
+    lcd.print(idleGauges[2]->shortLabel);
+    lcd.setCursor(0, 3);
+    lcd.print(idleGauges[3]->shortLabel);
+
+    //draw dividing line
     lcd.setCursor(9, 0);
     lcd.write(byte(4));
     lcd.setCursor(9, 1);
@@ -180,46 +197,48 @@ void draw_idle_gauges() {
     lcd.setCursor(9, 3);
     lcd.write(byte(4));
 
+    //right column of labels
     lcd.setCursor(11, 0);
-    lcd.print(engine_clt.shortLabel);
+    lcd.print(idleGauges[4]->shortLabel);
     lcd.setCursor(11, 1);
-    lcd.print(engine_iat.shortLabel);
+    lcd.print(idleGauges[5]->shortLabel);
     lcd.setCursor(11, 2);
-    lcd.print(engine_adv.shortLabel);
+    lcd.print(idleGauges[6]->shortLabel);
     lcd.setCursor(11, 3);
-    lcd.print(engine_pw1.shortLabel);
+    lcd.print(idleGauges[7]->shortLabel);
+
+    idleModeReady = true;
+}
+
+void draw_idle_gauges() {
+
+  if(!idleModeReady) {
+    start_idle_mode();
   }
   
-  for(int i = 0; i < 1; i++) {
-    lcd.setCursor(4, i);
-    lcd.print(idleGauges[i]->currentValue, idleGauges[i]->decimalPlaces);
-  }
-  
-  //lcd.setCursor(4, 0);
-  //lcd.print(engine_rpm.currentValue, engine_rpm.decimalPlaces);
+  lcd.setCursor(4, 0);
+  lcd.print(idleGauges[0]->currentValue, idleGauges[0]->decimalPlaces);
 
   lcd.setCursor(4, 1);
-  lcd.print(engine_map.currentValue, engine_map.decimalPlaces);
+  lcd.print(idleGauges[1]->currentValue, idleGauges[1]->decimalPlaces);
 
   lcd.setCursor(4, 2);
-  lcd.print(engine_afr.currentValue, engine_afr.decimalPlaces);
+  lcd.print(idleGauges[2]->currentValue, idleGauges[2]->decimalPlaces);
 
   lcd.setCursor(4, 3);
-  lcd.print(engine_bat.currentValue, engine_bat.decimalPlaces);
+  lcd.print(idleGauges[3]->currentValue, idleGauges[3]->decimalPlaces);
 
   lcd.setCursor(15, 0);
-  lcd.print(engine_clt.currentValue, engine_clt.decimalPlaces);
+  lcd.print(idleGauges[4]->currentValue, idleGauges[4]->decimalPlaces);
 
   lcd.setCursor(15, 1);
-  lcd.print(engine_iat.currentValue, engine_iat.decimalPlaces);
+  lcd.print(idleGauges[5]->currentValue, idleGauges[5]->decimalPlaces);
 
   lcd.setCursor(15, 2);
-  lcd.print(engine_adv.currentValue, engine_adv.decimalPlaces);
+  lcd.print(idleGauges[6]->currentValue, idleGauges[6]->decimalPlaces);
 
   lcd.setCursor(15, 3);
-  lcd.print(engine_pw1.currentValue, engine_pw1.decimalPlaces);
-  
-    
+  lcd.print(idleGauges[7]->currentValue, idleGauges[7]->decimalPlaces);
 }
 
 void load_from_can() {
