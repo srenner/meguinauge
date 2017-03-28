@@ -59,7 +59,6 @@ byte fill5[8] = {
 struct EngineVariable
 {
   String shortLabel;
-  //String longLabel;
   double currentValue;
   double previousValue;
   double minimum;
@@ -94,19 +93,19 @@ unsigned long interval = 100;
 unsigned long lastMillis = 0;
 unsigned long currentMillis = 0;
 
-unsigned long goodDataCount = 0;
-unsigned long badDataCount = 0;
-
 const int SPI_CS_PIN = 10;
 
-EngineVariable* idleGauges[8];
-bool idleModeReady = false;
+EngineVariable* dualModeGauges[2][2];
+EngineVariable* quadModeGauges[1][4];
+EngineVariable* octoModeGauges[1][8];
 
-enum gaugeMode {
-  idle,
-  two,
-  four
-};
+bool dualModeReady = false;
+bool quadModeReady = false;
+bool octoModeReady = false;
+
+bool dualModeIndex = 0;
+bool quadModeIndex = 0;
+bool octoModeIndex = 0;
 
 MCP_CAN CAN(SPI_CS_PIN); 
 
@@ -117,20 +116,20 @@ void setup() {
   lcd.createChar(2, fill3);
   lcd.createChar(3, fill4);
   lcd.createChar(4, fill5);
+  
+  octoModeGauges[0][0] = &engine_rpm;
+  octoModeGauges[0][1] = &engine_map;
+  octoModeGauges[0][2] = &engine_afr;
+  octoModeGauges[0][3] = &engine_adv;
+  octoModeGauges[0][4] = &engine_clt;
+  octoModeGauges[0][5] = &engine_iat;
+  octoModeGauges[0][6] = &engine_pw1;
+  octoModeGauges[0][7] = &engine_bat;
 
-  idleGauges[0] = &engine_rpm;
-  idleGauges[1] = &engine_map;
-  idleGauges[2] = &engine_afr;
-  idleGauges[3] = &engine_adv;
-  idleGauges[4] = &engine_clt;
-  idleGauges[5] = &engine_iat;
-  idleGauges[6] = &engine_pw1;
-  idleGauges[7] = &engine_bat;
+  dualModeGauges[0][0] = &engine_afr;
+  dualModeGauges[0][1] = &engine_tgt;
   
   lcd.begin(20, 4);
-  //lcd.print(engine_rpm.shortLabel);
-  //lcd.setCursor(0, 2);
-  //lcd.print(engine_afr.shortLabel);
 
   Serial.begin(115200);
   while (CAN_OK != CAN.begin(CAN_500KBPS))              // init can bus : baudrate = 500k
@@ -149,43 +148,97 @@ void loop() {
   if(currentMillis - lastMillis >= interval) {
     lastMillis = currentMillis;
     if(engine_rpm.currentValue < 2000) {
-      draw_idle_gauges();      
+      draw_octo_gauges();
     }
     else {
-      if(idleModeReady) {
-        lcd.clear();
-        idleModeReady = false;
-      }
-      if(engine_rpm.currentValue != engine_rpm.previousValue) {
-        lcd.setCursor(4, 0);
-        if(is_current_value_shorter(engine_rpm)) {
-          lcd.print("     ");
-          lcd.setCursor(4, 0);
-        }
-        lcd.print(engine_rpm.currentValue, engine_rpm.decimalPlaces);
-        draw_bar(engine_rpm, 1);
-      }
-      if(engine_afr.currentValue != engine_afr.previousValue) {
-        lcd.setCursor(4, 2);
-        lcd.print(engine_afr.currentValue);
-        draw_bar(engine_afr, 3);      
-      }      
+      draw_dual_gauges();
+      
+ 
     }
   }
 }
 
-void start_idle_mode() {
-    lcd.clear();
 
+void clear_mode() {
+  dualModeReady = false;
+  quadModeReady = false;
+  octoModeReady = false;
+  lcd.clear();
+}
+
+void draw_dual_gauges() {
+  if(!dualModeReady) {
+    clear_mode();
+    lcd.setCursor(0, 0);
+    lcd.print(dualModeGauges[0][0]->shortLabel);
+    lcd.setCursor(0, 2);
+    lcd.print(dualModeGauges[0][1]->shortLabel);
+    dualModeReady = true;
+  }
+  //if(dualModeGauges[0][0]->currentValue != dualModeGauges[0][0]->previousValue) {
+    lcd.setCursor(4, 0);
+    if(is_current_value_shorter(*dualModeGauges[0][0])) {
+      lcd.print("     ");
+      lcd.setCursor(4, 0);
+    }
+    lcd.print(dualModeGauges[0][0]->currentValue, dualModeGauges[0][0]->decimalPlaces);
+    draw_bar(*dualModeGauges[0][0], 1);
+  //}
+  //if(dualModeGauges[0][1]->currentValue != dualModeGauges[0][1]->previousValue) {
+    lcd.setCursor(4, 2);
+    if(is_current_value_shorter(*dualModeGauges[0][1])) {
+      lcd.print("     ");
+      lcd.setCursor(4, 2);
+    }
+    lcd.print(dualModeGauges[0][1]->currentValue, dualModeGauges[0][1]->decimalPlaces);
+    draw_bar(*dualModeGauges[0][1], 3);
+  //}
+}
+
+void draw_quad_gauges() {
+  if(!quadModeReady) {
+    clear_mode();
+    lcd.setCursor(0, 0);
+    lcd.print(quadModeGauges[0][0]->shortLabel);
+    lcd.setCursor(0, 1);
+    lcd.print(quadModeGauges[0][1]->shortLabel);
+    lcd.setCursor(0, 2);
+    lcd.print(quadModeGauges[0][2]->shortLabel);
+    lcd.setCursor(0, 3);
+    lcd.print(quadModeGauges[0][3]->shortLabel);
+    quadModeReady = true;
+  }
+
+  lcd.setCursor(4, 0);
+  if(is_current_value_shorter(*quadModeGauges[0][0])) {
+    lcd.print("     ");
+    lcd.setCursor(4, 0);
+  }
+  lcd.print(quadModeGauges[0][0]->currentValue, quadModeGauges[0][0]->decimalPlaces);
+
+  lcd.setCursor(4, 1);
+  lcd.print(quadModeGauges[0][1]->currentValue, quadModeGauges[0][1]->decimalPlaces);
+
+  lcd.setCursor(4, 2);
+  lcd.print(quadModeGauges[0][2]->currentValue, quadModeGauges[0][2]->decimalPlaces);
+
+  lcd.setCursor(4, 3);
+  lcd.print(quadModeGauges[0][3]->currentValue, quadModeGauges[0][3]->decimalPlaces);
+}
+
+void draw_octo_gauges() {
+
+  if(!octoModeReady) {
+    clear_mode();
     //left column of labels
     lcd.setCursor(0, 0);
-    lcd.print(idleGauges[0]->shortLabel);
+    lcd.print(octoModeGauges[0][0]->shortLabel);
     lcd.setCursor(0, 1);
-    lcd.print(idleGauges[1]->shortLabel);
+    lcd.print(octoModeGauges[0][1]->shortLabel);
     lcd.setCursor(0, 2);
-    lcd.print(idleGauges[2]->shortLabel);
+    lcd.print(octoModeGauges[0][2]->shortLabel);
     lcd.setCursor(0, 3);
-    lcd.print(idleGauges[3]->shortLabel);
+    lcd.print(octoModeGauges[0][3]->shortLabel);
 
     //draw dividing line
     lcd.setCursor(9, 0);
@@ -199,46 +252,72 @@ void start_idle_mode() {
 
     //right column of labels
     lcd.setCursor(11, 0);
-    lcd.print(idleGauges[4]->shortLabel);
+    lcd.print(octoModeGauges[0][4]->shortLabel);
     lcd.setCursor(11, 1);
-    lcd.print(idleGauges[5]->shortLabel);
+    lcd.print(octoModeGauges[0][5]->shortLabel);
     lcd.setCursor(11, 2);
-    lcd.print(idleGauges[6]->shortLabel);
+    lcd.print(octoModeGauges[0][6]->shortLabel);
     lcd.setCursor(11, 3);
-    lcd.print(idleGauges[7]->shortLabel);
+    lcd.print(octoModeGauges[0][7]->shortLabel);
 
-    idleModeReady = true;
-}
-
-void draw_idle_gauges() {
-
-  if(!idleModeReady) {
-    start_idle_mode();
+    octoModeReady = true;
   }
   
   lcd.setCursor(4, 0);
-  lcd.print(idleGauges[0]->currentValue, idleGauges[0]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][0])) {
+    lcd.print("     ");
+    lcd.setCursor(4, 0);
+  }
+  lcd.print(octoModeGauges[0][0]->currentValue, octoModeGauges[0][0]->decimalPlaces);
 
   lcd.setCursor(4, 1);
-  lcd.print(idleGauges[1]->currentValue, idleGauges[1]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][1])) {
+    lcd.print("     ");
+    lcd.setCursor(4, 1);
+  }
+  lcd.print(octoModeGauges[0][1]->currentValue, octoModeGauges[0][1]->decimalPlaces);
 
   lcd.setCursor(4, 2);
-  lcd.print(idleGauges[2]->currentValue, idleGauges[2]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][2])) {
+    lcd.print("     ");
+    lcd.setCursor(4, 2);
+  }
+  lcd.print(octoModeGauges[0][2]->currentValue, octoModeGauges[0][2]->decimalPlaces);
 
   lcd.setCursor(4, 3);
-  lcd.print(idleGauges[3]->currentValue, idleGauges[3]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][3])) {
+    lcd.print("     ");
+    lcd.setCursor(4, 3);
+  }
+  lcd.print(octoModeGauges[0][3]->currentValue, octoModeGauges[0][3]->decimalPlaces);
 
   lcd.setCursor(15, 0);
-  lcd.print(idleGauges[4]->currentValue, idleGauges[4]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][4])) {
+    lcd.print("     ");
+    lcd.setCursor(15, 0);
+  }
+  lcd.print(octoModeGauges[0][4]->currentValue, octoModeGauges[0][4]->decimalPlaces);
 
   lcd.setCursor(15, 1);
-  lcd.print(idleGauges[5]->currentValue, idleGauges[5]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][5])) {
+    lcd.print("     ");
+    lcd.setCursor(15, 1);
+  }
+  lcd.print(octoModeGauges[0][5]->currentValue, octoModeGauges[0][5]->decimalPlaces);
 
   lcd.setCursor(15, 2);
-  lcd.print(idleGauges[6]->currentValue, idleGauges[6]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][6])) {
+    lcd.print("     ");
+    lcd.setCursor(15, 2);
+  }
+  lcd.print(octoModeGauges[0][6]->currentValue, octoModeGauges[0][6]->decimalPlaces);
 
   lcd.setCursor(15, 3);
-  lcd.print(idleGauges[7]->currentValue, idleGauges[7]->decimalPlaces);
+  if(is_current_value_shorter(*octoModeGauges[0][7])) {
+    lcd.print("     ");
+    lcd.setCursor(15, 3);
+  }
+  lcd.print(octoModeGauges[0][7]->currentValue, octoModeGauges[0][7]->decimalPlaces);
 }
 
 void load_from_can() {
@@ -383,10 +462,10 @@ bool is_current_value_shorter(EngineVariable engine) {
 }
 
 void draw_bar(EngineVariable engineVar, int row) {
-  if(engineVar.currentValue == engineVar.previousValue) {
+  /*if(engineVar.currentValue == engineVar.previousValue) {
     //relax homeboy
-  }
-  else{
+  }*/
+  if(true){
     lcd.setCursor(0, row);
     
     //delete previous bar if it is too long
