@@ -58,12 +58,12 @@ byte fill5[8] = {
 
 struct EngineVariable
 {
-  String shortLabel;
-  double currentValue;
-  double previousValue;
-  double minimum;
-  double maximum;
-  int decimalPlaces;
+  char* shortLabel;
+  float currentValue;
+  float previousValue;
+  float minimum;
+  float maximum;
+  byte decimalPlaces;
 };
 
 EngineVariable engine_map   = {"MAP", 0.0, 0.0, 10.0, 250.0, 1};    //manifold absolute pressure
@@ -82,21 +82,21 @@ EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0};    //ego correc
 EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 100.0, 2000.0, 0};  //exhaust gas temp
 EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3};      //injector pulse width sequential
 EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 0.0, 20.0, 1};      //battery voltage
-EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 10000.0, 3};   //generic sensor 1
-EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 10000.0, 3};   //generic sensor 2
+EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 9999.0, 1};   //generic sensor 1
+EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 9999.0, 1};   //generic sensor 2
 EngineVariable engine_knk   = {"KNK", 0.0, 0.0, 0.0, 50.0, 1};      //knock ignition retard
 EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 300.0, 0};     //vehicle speed
 EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, 1};      //traction control ignition retard
 EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 100.0, 1};     //launch control timing
 
-unsigned long interval = 100;
+byte interval = 100;
 unsigned long lastMillis = 0;
 unsigned long currentMillis = 0;
 
 const int SPI_CS_PIN = 10;
 
-EngineVariable* dualModeGauges[2][2];
-EngineVariable* quadModeGauges[1][4];
+EngineVariable* dualModeGauges[3][2];
+EngineVariable* quadModeGauges[2][4];
 EngineVariable* octoModeGauges[1][8];
 
 bool dualModeReady = false;
@@ -134,11 +134,11 @@ void setup() {
   Serial.begin(115200);
   while (CAN_OK != CAN.begin(CAN_500KBPS))              // init can bus : baudrate = 500k
       {
-          Serial.println("CAN BUS Shield init fail");
-          Serial.println(" Init CAN BUS Shield again");
+          Serial.println(F("CAN BUS Shield init fail"));
+          Serial.println(F(" Init CAN BUS Shield again"));
           delay(100);
       }
-  Serial.println("COMM OK");
+  Serial.println(F("COMM OK"));
 }
 
 void loop() {
@@ -178,7 +178,7 @@ void draw_dual_gauges() {
   //if(dualModeGauges[0][0]->currentValue != dualModeGauges[0][0]->previousValue) {
     lcd.setCursor(4, 0);
     if(is_current_value_shorter(*dualModeGauges[0][0])) {
-      lcd.print("     ");
+      lcd.print(F("     "));
       lcd.setCursor(4, 0);
     }
     lcd.print(dualModeGauges[0][0]->currentValue, dualModeGauges[0][0]->decimalPlaces);
@@ -187,7 +187,7 @@ void draw_dual_gauges() {
   //if(dualModeGauges[0][1]->currentValue != dualModeGauges[0][1]->previousValue) {
     lcd.setCursor(4, 2);
     if(is_current_value_shorter(*dualModeGauges[0][1])) {
-      lcd.print("     ");
+      lcd.print(F("     "));
       lcd.setCursor(4, 2);
     }
     lcd.print(dualModeGauges[0][1]->currentValue, dualModeGauges[0][1]->decimalPlaces);
@@ -211,7 +211,7 @@ void draw_quad_gauges() {
 
   lcd.setCursor(4, 0);
   if(is_current_value_shorter(*quadModeGauges[0][0])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(4, 0);
   }
   lcd.print(quadModeGauges[0][0]->currentValue, quadModeGauges[0][0]->decimalPlaces);
@@ -265,56 +265,56 @@ void draw_octo_gauges() {
   
   lcd.setCursor(4, 0);
   if(is_current_value_shorter(*octoModeGauges[0][0])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(4, 0);
   }
   lcd.print(octoModeGauges[0][0]->currentValue, octoModeGauges[0][0]->decimalPlaces);
 
   lcd.setCursor(4, 1);
   if(is_current_value_shorter(*octoModeGauges[0][1])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(4, 1);
   }
   lcd.print(octoModeGauges[0][1]->currentValue, octoModeGauges[0][1]->decimalPlaces);
 
   lcd.setCursor(4, 2);
   if(is_current_value_shorter(*octoModeGauges[0][2])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(4, 2);
   }
   lcd.print(octoModeGauges[0][2]->currentValue, octoModeGauges[0][2]->decimalPlaces);
 
   lcd.setCursor(4, 3);
   if(is_current_value_shorter(*octoModeGauges[0][3])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(4, 3);
   }
   lcd.print(octoModeGauges[0][3]->currentValue, octoModeGauges[0][3]->decimalPlaces);
 
   lcd.setCursor(15, 0);
   if(is_current_value_shorter(*octoModeGauges[0][4])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(15, 0);
   }
   lcd.print(octoModeGauges[0][4]->currentValue, octoModeGauges[0][4]->decimalPlaces);
 
   lcd.setCursor(15, 1);
   if(is_current_value_shorter(*octoModeGauges[0][5])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(15, 1);
   }
   lcd.print(octoModeGauges[0][5]->currentValue, octoModeGauges[0][5]->decimalPlaces);
 
   lcd.setCursor(15, 2);
   if(is_current_value_shorter(*octoModeGauges[0][6])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(15, 2);
   }
   lcd.print(octoModeGauges[0][6]->currentValue, octoModeGauges[0][6]->decimalPlaces);
 
   lcd.setCursor(15, 3);
   if(is_current_value_shorter(*octoModeGauges[0][7])) {
-    lcd.print("     ");
+    lcd.print(F("     "));
     lcd.setCursor(15, 3);
   }
   lcd.print(octoModeGauges[0][7]->currentValue, octoModeGauges[0][7]->decimalPlaces);
