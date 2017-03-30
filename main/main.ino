@@ -182,7 +182,7 @@ void draw_dual_gauges() {
       lcd.setCursor(4, 0);
     }
     lcd.print(dualModeGauges[0][0]->currentValue, dualModeGauges[0][0]->decimalPlaces);
-    draw_bar(*dualModeGauges[0][0], 1);
+    draw_bar(*dualModeGauges[0][0], 1, 0);
   //}
   //if(dualModeGauges[0][1]->currentValue != dualModeGauges[0][1]->previousValue) {
     lcd.setCursor(4, 2);
@@ -191,7 +191,7 @@ void draw_dual_gauges() {
       lcd.setCursor(4, 2);
     }
     lcd.print(dualModeGauges[0][1]->currentValue, dualModeGauges[0][1]->decimalPlaces);
-    draw_bar(*dualModeGauges[0][1], 3);
+    draw_bar(*dualModeGauges[0][1], 3, 0);
   //}
 }
 
@@ -461,7 +461,7 @@ bool is_current_value_shorter(EngineVariable engine) {
   return currentLength < previousLength;
 }
 
-void draw_bar(EngineVariable engineVar, int row) {
+void draw_bar(EngineVariable engineVar, byte row, byte column) {
   /*if(engineVar.currentValue == engineVar.previousValue) {
     //relax homeboy
   }*/
@@ -480,8 +480,8 @@ void draw_bar(EngineVariable engineVar, int row) {
     int partialBars = bars % 5;
   
     //prevent graph overrun
-    if(fullBars >= 20) {
-      fullBars = 20;
+    if(fullBars >= (20 - column)) {
+      fullBars = (20 - column);
       partialBars = 0;
     }
     
