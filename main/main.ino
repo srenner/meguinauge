@@ -476,7 +476,7 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
     }
     
     int bars = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
-    int fullBars = bars/5;
+    int fullBars = bars/(100/(20 - column));   //5;
     int partialBars = bars % 5;
   
     //prevent graph overrun
