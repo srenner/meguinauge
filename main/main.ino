@@ -67,8 +67,8 @@ struct EngineVariable
 };
 
 EngineVariable engine_map   = {"MAP", 0.0, 0.0, 10.0, 250.0, 1};    //manifold absolute pressure
-EngineVariable calc_vac     = {"VAC", 0.0, 0.0, -200.0, 100.0, 1};  //vacuum  
-EngineVariable calc_bst     = {"BST", 0.0, 0.0, 0.0, 50.0, 1};      //boost 
+//EngineVariable calc_vac     = {"VAC", 0.0, 0.0, -200.0, 100.0, 1};  //vacuum  
+//EngineVariable calc_bst     = {"BST", 0.0, 0.0, 0.0, 50.0, 1};      //boost 
 EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, 0};    //engine rpm
 EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 160.0, 240.0, 0};   //coolant temp
 EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, 0};     //throttle position
@@ -126,8 +126,13 @@ void setup() {
   octoModeGauges[0][6] = &engine_pw1;
   octoModeGauges[0][7] = &engine_bat;
 
-  dualModeGauges[0][0] = &engine_afr;
-  dualModeGauges[0][1] = &engine_tgt;
+  dualModeGauges[0][0] = &engine_rpm;
+  dualModeGauges[0][1] = &engine_afr;
+
+  quadModeGauges[0][0] = &engine_rpm;
+  quadModeGauges[0][1] = &engine_map;
+  quadModeGauges[0][2] = &engine_afr;
+  quadModeGauges[0][3] = &engine_tgt;
   
   lcd.begin(20, 4);
 
@@ -147,14 +152,10 @@ void loop() {
   currentMillis = millis();
   if(currentMillis - lastMillis >= interval) {
     lastMillis = currentMillis;
-    if(engine_rpm.currentValue < 2000) {
-      draw_octo_gauges();
-    }
-    else {
-      draw_dual_gauges();
-      
+      //draw_octo_gauges();
+      //draw_dual_gauges();
+      draw_quad_gauges();
  
-    }
   }
 }
 
@@ -215,15 +216,19 @@ void draw_quad_gauges() {
     lcd.setCursor(4, 0);
   }
   lcd.print(quadModeGauges[0][0]->currentValue, quadModeGauges[0][0]->decimalPlaces);
+  draw_bar(*quadModeGauges[0][0], 0, 9);
 
   lcd.setCursor(4, 1);
   lcd.print(quadModeGauges[0][1]->currentValue, quadModeGauges[0][1]->decimalPlaces);
+  draw_bar(*quadModeGauges[0][1], 1, 9);
 
   lcd.setCursor(4, 2);
   lcd.print(quadModeGauges[0][2]->currentValue, quadModeGauges[0][2]->decimalPlaces);
+  draw_bar(*quadModeGauges[0][2], 2, 9);
 
   lcd.setCursor(4, 3);
   lcd.print(quadModeGauges[0][3]->currentValue, quadModeGauges[0][3]->decimalPlaces);
+  draw_bar(*quadModeGauges[0][3], 3, 9);
 }
 
 void draw_octo_gauges() {
@@ -471,7 +476,27 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
     //delete previous bar if it is too long
     //todo optimize to only delete the needful
     if(engineVar.currentValue < engineVar.previousValue) {
-      lcd.write("                    ");
+      //lcd.write("                    ");
+
+      /*char *blank = malloc((20 - column) + 1);
+      memset(blank, ' ', (20 - column));
+      blank[(20 - column)] = '\0';
+      lcd.write(blank);
+      for(byte i = 0; i < (20 - column) + 1; i++) {
+        free(blank[i]);
+      }
+      free(blank);*/
+
+      /* HAVING MEMORY/PERFORMANCE ISSUES HERE. HARDCODING THIS SEEMS TO HELP. */
+
+      if(column == 0) {
+        lcd.write("                    ");  //hard coded value for dual mode
+      }
+      else {
+        lcd.write("           ");           //hard-coded value for quad mode
+      }
+      
+      
       lcd.setCursor(column, row);
     }
     
