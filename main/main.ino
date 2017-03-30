@@ -466,13 +466,13 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
     //relax homeboy
   }*/
   if(true){
-    lcd.setCursor(0, row);
+    lcd.setCursor(column, row);
     
     //delete previous bar if it is too long
     //todo optimize to only delete the needful
     if(engineVar.currentValue < engineVar.previousValue) {
       lcd.write("                    ");
-      lcd.setCursor(0, row);
+      lcd.setCursor(column, row);
     }
     
     int bars = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
@@ -485,7 +485,7 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
       partialBars = 0;
     }
     
-    lcd.setCursor(0, row);
+    lcd.setCursor(column, row);
     for(int i = 0; i < fullBars; i++) {
       lcd.write(byte(4));
     }
