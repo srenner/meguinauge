@@ -504,8 +504,8 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
     //todo optimize and correct partial bars
     byte percent = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
     float bars = (percent/(100.0/(20.0 - column)) * 10.0) / 10.0;
-    byte fullBars = floor(bars);
-    byte partialBars = floor((bars - (floor(bars))) /0.2);
+    byte fullBars = (byte)bars;
+    byte partialBars = (byte)((bars - ((byte)(bars))) /0.2);
 
     //todo optimize/fix this
     if(engineVar.currentValue == engineVar.minimum) {
