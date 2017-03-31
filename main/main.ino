@@ -144,6 +144,9 @@ void setup() {
           delay(100);
       }
   Serial.println(F("COMM OK"));
+
+  lcd.clear();
+  
 }
 
 void loop() {
@@ -421,7 +424,7 @@ void load_from_can() {
 
 //note: using log10 would work but this is faster
 bool is_current_value_shorter(EngineVariable engine) {
-  int currentLength;
+  byte currentLength;
   if(engine.currentValue >= 10000) {
     currentLength = 5;
   }
@@ -442,7 +445,7 @@ bool is_current_value_shorter(EngineVariable engine) {
     currentLength+= engine.decimalPlaces;
   }
 
-  int previousLength;
+  byte previousLength;
   if(engine.previousValue >= 10000) {
     previousLength = 5;
   }
@@ -476,7 +479,6 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
     //delete previous bar if it is too long
     //todo optimize to only delete the needful
     if(engineVar.currentValue < engineVar.previousValue) {
-      //lcd.write("                    ");
 
       /*char *blank = malloc((20 - column) + 1);
       memset(blank, ' ', (20 - column));
@@ -495,16 +497,21 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
       else {
         lcd.write("           ");           //hard-coded value for quad mode
       }
-      
-      
       lcd.setCursor(column, row);
     }
 
     //calculate bars
+    //todo optimize and correct partial bars
     byte percent = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
     float bars = (percent/(100.0/(20.0 - column)) * 10.0) / 10.0;
     byte fullBars = floor(bars);
     byte partialBars = floor((bars - (floor(bars))) /0.2);
+
+    //todo optimize/fix this
+    if(engineVar.currentValue == engineVar.minimum) {
+      fullBars = 0;
+      partialBars = 0;
+    }
 
     //prevent graph overrun
     if(fullBars >= (20 - column)) {
