@@ -499,11 +499,13 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
       
       lcd.setCursor(column, row);
     }
-    
-    int bars = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
-    int fullBars = bars/(100/(20 - column));   //5;
-    int partialBars = bars % 5;
-  
+
+    //calculate bars
+    byte percent = ((engineVar.currentValue - engineVar.minimum) * 100) / (engineVar.maximum - engineVar.minimum);
+    float bars = (percent/(100.0/(20.0 - column)) * 10.0) / 10.0;
+    byte fullBars = floor(bars);
+    byte partialBars = floor((bars - (floor(bars))) /0.2);
+
     //prevent graph overrun
     if(fullBars >= (20 - column)) {
       fullBars = (20 - column);
