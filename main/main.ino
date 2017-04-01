@@ -66,28 +66,26 @@ struct EngineVariable
   byte decimalPlaces;
 };
 
-EngineVariable engine_map   = {"MAP", 0.0, 0.0, 10.0, 250.0, 1};    //manifold absolute pressure
-//EngineVariable calc_vac     = {"VAC", 0.0, 0.0, -200.0, 100.0, 1};  //vacuum  
-//EngineVariable calc_bst     = {"BST", 0.0, 0.0, 0.0, 50.0, 1};      //boost 
+EngineVariable engine_map   = {"MAP", 0.0, 0.0, 15.0, 250.0, 1};    //manifold absolute pressure
 EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, 0};    //engine rpm
-EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 160.0, 240.0, 0};   //coolant temp
+EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 20.0, 240.0, 0};   //coolant temp
 EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, 0};     //throttle position
 EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 20.0, 3};      //injector pulse width bank 1
 EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 20.0, 3};      //injector pulse width bank 2
-EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 40.0, 125.0, 0};    //intake air temp aka 'mat'
+EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 40.0, 150.0, 0};    //intake air temp aka 'mat'
 EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 40.0, 1};     //ignition advance
 EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, 1};     //afr target
 EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, 1};     //air fuel ratio
 EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0};    //ego correction %
 EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 100.0, 2000.0, 0};  //exhaust gas temp
 EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3};      //injector pulse width sequential
-EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 0.0, 20.0, 1};      //battery voltage
-EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 9999.0, 1};   //generic sensor 1
-EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 9999.0, 1};   //generic sensor 2
+EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 8.0, 18.0, 1};      //battery voltage
+EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 999.0, 1};     //generic sensor 1
+EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 999.0, 1};     //generic sensor 2
 EngineVariable engine_knk   = {"KNK", 0.0, 0.0, 0.0, 50.0, 1};      //knock ignition retard
-EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 300.0, 0};     //vehicle speed
+EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 160.0, 0};     //vehicle speed
 EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, 1};      //traction control ignition retard
-EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 100.0, 1};     //launch control timing
+EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 50.0, 1};     //launch control timing
 
 byte interval = 100;
 unsigned long lastMillis = 0;
