@@ -153,7 +153,7 @@ void loop() {
   load_from_can();
   
   currentMillis = millis();
-  if(currentMillis - lastMillis >= interval) {
+  if(currentMillis - lastMillis >= interval && currentMillis > 500) {
     lastMillis = currentMillis;
       //draw_octo_gauges();
       //draw_dual_gauges();
