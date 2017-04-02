@@ -64,28 +64,31 @@ struct EngineVariable
   float minimum;
   float maximum;
   byte decimalPlaces;
+  unsigned long goodCount;
+  unsigned long lowCount;
+  unsigned long highCount;
 };
 
-EngineVariable engine_map   = {"MAP", 0.0, 0.0, 15.0, 250.0, 1};    //manifold absolute pressure
-EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, 0};    //engine rpm
-EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 20.0, 240.0, 0};   //coolant temp
-EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, 0};     //throttle position
-EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 20.0, 3};      //injector pulse width bank 1
-EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 20.0, 3};      //injector pulse width bank 2
-EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 40.0, 150.0, 0};    //intake air temp aka 'mat'
-EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 40.0, 1};     //ignition advance
-EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, 1};     //afr target
-EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, 1};     //air fuel ratio
-EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0};    //ego correction %
-EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 100.0, 2000.0, 0};  //exhaust gas temp
-EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3};      //injector pulse width sequential
-EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 8.0, 18.0, 1};      //battery voltage
-EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 999.0, 1};     //generic sensor 1
-EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 999.0, 1};     //generic sensor 2
-EngineVariable engine_knk   = {"KNK", 0.0, 0.0, 0.0, 50.0, 1};      //knock ignition retard
-EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 160.0, 0};     //vehicle speed
-EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, 1};      //traction control ignition retard
-EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 50.0, 1};     //launch control timing
+EngineVariable engine_map   = {"MAP", 0.0, 0.0, 15.0, 250.0, 1, 0, 0};    //manifold absolute pressure
+EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, 0, 0, 0};    //engine rpm
+EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 20.0, 240.0, 0, 0, 0};    //coolant temp
+EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, 0, 0, 0};     //throttle position
+EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 20.0, 3, 0, 0};      //injector pulse width bank 1
+EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 20.0, 3, 0, 0};      //injector pulse width bank 2
+EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 40.0, 150.0, 0, 0, 0};    //intake air temp aka 'mat'
+EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 40.0, 1, 0, 0};     //ignition advance
+EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, 1, 0, 0};     //afr target
+EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, 1, 0, 0};     //air fuel ratio
+EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0, 0, 0};    //ego correction %
+EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 100.0, 2000.0, 0, 0, 0};  //exhaust gas temp
+EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3, 0, 0};      //injector pulse width sequential
+EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 8.0, 18.0, 1, 0, 0};      //battery voltage
+EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 999.0, 1, 0, 0};     //generic sensor 1
+EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 999.0, 1, 0, 0};     //generic sensor 2
+EngineVariable engine_knk   = {"KNK", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //knock ignition retard
+EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 160.0, 0, 0, 0};     //vehicle speed
+EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //traction control ignition retard
+EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //launch control timing
 
 byte interval = 100;
 unsigned long lastMillis = 0;
@@ -156,7 +159,11 @@ void loop() {
       //draw_octo_gauges();
       //draw_dual_gauges();
       draw_quad_gauges();
- 
+
+      //unsigned long badCount = engine_rpm.lowCount + engine_rpm.highCount;
+      //unsigned long totalCount = badCount + engine_rpm.goodCount;
+      //byte percent = badCount * 100 / totalCount;
+      //Serial.println(percent);
   }
 }
 
@@ -351,78 +358,98 @@ void load_from_can() {
       case 1512:
         engine_map.previousValue = engine_map.currentValue;
         engine_map.currentValue = ((buf[0] * 256) + buf[1]) / 10.0;
+        increment_counter(&engine_map);
 
         engine_rpm.previousValue = engine_rpm.currentValue;
         //engine_rpm.currentValue = buf[2] * 256 + buf[3];
         //round rpm to nearest 10
         engine_rpm.currentValue = round((buf[2] * 256 + buf[3]) / 10.0) * 10.0;
-
+        increment_counter(&engine_rpm);
+        
         engine_clt.previousValue = engine_clt.currentValue;
         engine_clt.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
-
+        increment_counter(&engine_clt);
+        
         engine_tps.previousValue = engine_tps.currentValue;
         engine_tps.currentValue = (buf[6] * 256 + buf[7]) / 10.0;
+        increment_counter(&engine_tps);
         
         break;
       case 1513:
         engine_pw1.previousValue = engine_pw1.currentValue;
         engine_pw1.currentValue = (buf[0] * 256 + buf[1]) / 1000.0;
+        increment_counter(&engine_pw1);
 
         engine_pw2.previousValue = engine_pw2.currentValue;
         engine_pw2.currentValue = (buf[2] * 256 + buf[3]) / 1000.0;
+        increment_counter(&engine_pw2);
 
         engine_iat.previousValue = engine_iat.currentValue;
         engine_iat.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
+        increment_counter(&engine_iat);
 
         engine_adv.previousValue = engine_adv.currentValue;
         engine_adv.currentValue = (buf[6] * 256 + buf[7]) / 10.0;
+        increment_counter(&engine_adv);
         
         break;
       case 1514:
         engine_tgt.previousValue = engine_tgt.currentValue;
         engine_tgt.currentValue = (double)buf[0] / 10.0;
+        increment_counter(&engine_tgt);
 
         engine_afr.previousValue = engine_afr.currentValue;
         engine_afr.currentValue = (double)buf[1] / 10.0;
+        increment_counter(&engine_afr);
 
         engine_ego.previousValue = engine_ego.currentValue;
         engine_ego.currentValue = (buf[2] * 256 + buf[3]) / 10.0;
+        increment_counter(&engine_ego);
 
         engine_egt.previousValue = engine_egt.currentValue;
         engine_egt.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
+        increment_counter(&engine_egt);
 
         engine_pws.previousValue = engine_pws.currentValue;
         engine_pws.currentValue = (buf[6] * 256 + buf[7]) / 1000.0;
+        increment_counter(&engine_pws);
         
         break;
       case 1515:
         engine_bat.previousValue = engine_bat.currentValue;
         engine_bat.currentValue = (buf[0] * 256 + buf[1]) / 10.0;
+        increment_counter(&engine_bat);
 
         //not tested
         engine_sr1.previousValue = engine_sr1.currentValue;
         engine_sr1.currentValue = (buf[2] * 256 + buf[3]) / 10.0;
+        increment_counter(&engine_sr1);
 
         //not tested
         engine_sr2.previousValue = engine_sr2.currentValue;
         engine_sr2.currentValue = (buf[4] * 256 + buf[5]) / 10.0;
+        increment_counter(&engine_sr2);
 
         //not tested
         engine_knk.previousValue = engine_knk.currentValue;
         engine_knk.currentValue = (buf[6] * 256) / 10.0;
+        increment_counter(&engine_knk);
 
         break;
       case 1516:
         //not tested
         engine_vss.previousValue = engine_vss.currentValue;
         engine_vss.currentValue = (buf[0] * 256 + buf[1]) / 10.0;
+        increment_counter(&engine_vss);
 
         //not tested
         engine_tcr.previousValue = engine_tcr.currentValue;
         engine_tcr.currentValue = (buf[2] * 256 + buf[3]) / 10.0;
+        increment_counter(&engine_tcr);
 
         engine_lct.previousValue = engine_lct.currentValue;
         engine_lct.previousValue = (buf[4] * 256 + buf[5]) / 10.0;
+        increment_counter(&engine_lct);
         
         break;
       default:
@@ -430,6 +457,18 @@ void load_from_can() {
         break;
     }
   }
+}
+
+void increment_counter(EngineVariable* engine) {
+  if(engine->currentValue > engine->maximum) {
+    engine->highCount++;
+  }
+  else if(engine->currentValue < engine->minimum) {
+    engine->lowCount++;
+  }
+  else {
+    engine->goodCount++;
+  }  
 }
 
 //note: using log10 would work but this is faster
