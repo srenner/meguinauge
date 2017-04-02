@@ -80,7 +80,7 @@ EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 40.0, 1, 0, 0};     //igni
 EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, 1, 0, 0};     //afr target
 EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, 1, 0, 0};     //air fuel ratio
 EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0, 0, 0};    //ego correction %
-EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 100.0, 2000.0, 0, 0, 0};  //exhaust gas temp
+EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 0.0, 2000.0, 0, 0, 0};  //exhaust gas temp
 EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3, 0, 0};      //injector pulse width sequential
 EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 8.0, 18.0, 1, 0, 0};      //battery voltage
 EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 999.0, 1, 0, 0};     //generic sensor 1
@@ -90,9 +90,15 @@ EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 160.0, 0, 0, 0};     //vehi
 EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //traction control ignition retard
 EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //launch control timing
 
-byte interval = 100;
-unsigned long lastMillis = 0;
+EngineVariable* allGauges[20];
+
 unsigned long currentMillis = 0;
+
+byte displayInterval = 100;
+unsigned long lastDisplayMillis = 0;
+
+unsigned int diagnosticInterval = 5000;
+unsigned long lastDiagnosticMillis = 0;
 
 const int SPI_CS_PIN = 10;
 
@@ -135,15 +141,34 @@ void setup() {
   quadModeGauges[0][2] = &engine_afr;
   quadModeGauges[0][3] = &engine_tps;
   
+  allGauges[0] = &engine_map;
+  allGauges[1] = &engine_rpm;
+  allGauges[2] = &engine_clt;
+  allGauges[3] = &engine_tps;
+  allGauges[4] = &engine_pw1;
+  allGauges[5] = &engine_pw2;
+  allGauges[6] = &engine_iat;
+  allGauges[7] = &engine_adv;
+  allGauges[8] = &engine_tgt;
+  allGauges[9] = &engine_afr;
+  allGauges[10] = &engine_ego;
+  allGauges[11] = &engine_egt;
+  allGauges[12] = &engine_pws;
+  allGauges[13] = &engine_bat;
+  allGauges[14] = &engine_sr1;
+  allGauges[15] = &engine_sr2;
+  allGauges[16] = &engine_knk;
+  allGauges[17] = &engine_vss;
+  allGauges[18] = &engine_tcr;
+  allGauges[19] = &engine_lct;
+  
   lcd.begin(20, 4);
 
   Serial.begin(115200);
-  while (CAN_OK != CAN.begin(CAN_500KBPS))              // init can bus : baudrate = 500k
-      {
-          Serial.println(F("CAN BUS Shield init fail"));
-          Serial.println(F(" Init CAN BUS Shield again"));
-          delay(100);
-      }
+  while (CAN_OK != CAN.begin(CAN_500KBPS)) {
+    Serial.println(F("CAN bus init fail"));
+    delay(100);
+  }
   Serial.println(F("COMM OK"));
 
   lcd.clear();
@@ -154,8 +179,8 @@ void loop() {
   load_from_can();
   
   currentMillis = millis();
-  if(currentMillis - lastMillis >= interval && currentMillis > 500) {
-    lastMillis = currentMillis;
+  if(currentMillis - lastDisplayMillis >= displayInterval && currentMillis > 500) {
+    lastDisplayMillis = currentMillis;
       //draw_octo_gauges();
       //draw_dual_gauges();
       draw_quad_gauges();
@@ -164,6 +189,11 @@ void loop() {
       //unsigned long totalCount = badCount + engine_rpm.goodCount;
       //byte percent = badCount * 100 / totalCount;
       //Serial.println(percent);
+  }
+
+  if(currentMillis - lastDiagnosticMillis >= diagnosticInterval && currentMillis > 500) {
+    lastDiagnosticMillis = currentMillis;
+    Serial.println(calculate_error_light());
   }
 }
 
@@ -578,5 +608,26 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
       lcd.write(byte(partialBars - 1));    
     }  
   }  
+}
+
+bool calculate_error_light() {
+  byte len = 20; //sizeof(allGauges);
+  unsigned long badCount;
+  unsigned long totalCount;
+  byte percent;
+  
+  for(byte i = 0; i < len; i++) {
+    badCount = allGauges[i]->lowCount + allGauges[i]->highCount;
+    totalCount = badCount + allGauges[i]->goodCount;
+    percent = badCount * 100 / totalCount;
+    if(percent > 9) {
+      Serial.println(allGauges[i]->shortLabel);
+      Serial.println(allGauges[i]->lowCount);
+      Serial.println(allGauges[i]->highCount);
+      Serial.println(allGauges[i]->goodCount);
+      return true;
+    }
+  }
+  return false;
 }
 
