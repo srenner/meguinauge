@@ -130,7 +130,7 @@ void setup() {
   quadModeGauges[0][0] = &engine_rpm;
   quadModeGauges[0][1] = &engine_map;
   quadModeGauges[0][2] = &engine_afr;
-  quadModeGauges[0][3] = &engine_tgt;
+  quadModeGauges[0][3] = &engine_tps;
   
   lcd.begin(20, 4);
 
@@ -220,14 +220,26 @@ void draw_quad_gauges() {
   draw_bar(*quadModeGauges[0][0], 0, 9);
 
   lcd.setCursor(4, 1);
+  if(is_current_value_shorter(*quadModeGauges[0][1])) {
+    lcd.print(F("     "));
+    lcd.setCursor(4, 1);
+  }
   lcd.print(quadModeGauges[0][1]->currentValue, quadModeGauges[0][1]->decimalPlaces);
   draw_bar(*quadModeGauges[0][1], 1, 9);
 
   lcd.setCursor(4, 2);
+  if(is_current_value_shorter(*quadModeGauges[0][2])) {
+    lcd.print(F("     "));
+    lcd.setCursor(4, 2);
+  }
   lcd.print(quadModeGauges[0][2]->currentValue, quadModeGauges[0][2]->decimalPlaces);
   draw_bar(*quadModeGauges[0][2], 2, 9);
 
   lcd.setCursor(4, 3);
+  if(is_current_value_shorter(*quadModeGauges[0][3])) {
+    lcd.print(F("     "));
+    lcd.setCursor(4, 3);
+  }
   lcd.print(quadModeGauges[0][3]->currentValue, quadModeGauges[0][3]->decimalPlaces);
   draw_bar(*quadModeGauges[0][3], 3, 9);
 }
@@ -422,17 +434,19 @@ void load_from_can() {
 
 //note: using log10 would work but this is faster
 bool is_current_value_shorter(EngineVariable engine) {
+  int roundedCurrent = round(engine.currentValue);
+  int roundedPrevious = round(engine.previousValue);
   byte currentLength;
-  if(engine.currentValue >= 10000) {
+  if(roundedCurrent >= 10000) {
     currentLength = 5;
   }
-  else if(engine.currentValue >= 1000) {
+  else if(roundedCurrent >= 1000) {
     currentLength = 4;
   }
-  else if(engine.currentValue >= 100) {
+  else if(roundedCurrent >= 100) {
     currentLength = 3;
   }
-  else if(engine.currentValue >= 10) {
+  else if(roundedCurrent >= 10) {
     currentLength = 2;
   }
   else {
@@ -444,16 +458,16 @@ bool is_current_value_shorter(EngineVariable engine) {
   }
 
   byte previousLength;
-  if(engine.previousValue >= 10000) {
+  if(roundedPrevious >= 10000) {
     previousLength = 5;
   }
-  else if(engine.previousValue >= 1000) {
+  else if(roundedPrevious >= 1000) {
     previousLength = 4;
   }
-  else if(engine.previousValue >= 100) {
+  else if(roundedPrevious >= 100) {
     previousLength = 3;
   }
-  else if(engine.previousValue >= 10) {
+  else if(roundedPrevious >= 10) {
     previousLength = 2;
   }
   else {
