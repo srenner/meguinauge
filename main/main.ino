@@ -114,9 +114,13 @@ bool dualModeIndex = 0;
 bool quadModeIndex = 0;
 bool octoModeIndex = 0;
 
+bool inError = false;
+
 MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
+
+  pinMode(2, OUTPUT);
 
   lcd.createChar(0, fill1);
   lcd.createChar(1, fill2);
@@ -184,16 +188,20 @@ void loop() {
       //draw_octo_gauges();
       //draw_dual_gauges();
       draw_quad_gauges();
-
-      //unsigned long badCount = engine_rpm.lowCount + engine_rpm.highCount;
-      //unsigned long totalCount = badCount + engine_rpm.goodCount;
-      //byte percent = badCount * 100 / totalCount;
-      //Serial.println(percent);
   }
 
   if(currentMillis - lastDiagnosticMillis >= diagnosticInterval && currentMillis > 500) {
     lastDiagnosticMillis = currentMillis;
-    Serial.println(calculate_error_light());
+    bool err = calculate_error_light();
+
+    if(err != inError) {
+      inError = err;
+      digitalWrite(2, err);  
+    }
+
+    
+    
+    //Serial.println(err);
   }
 }
 
@@ -615,19 +623,21 @@ bool calculate_error_light() {
   unsigned long badCount;
   unsigned long totalCount;
   byte percent;
+  bool inError = false;
   
   for(byte i = 0; i < len; i++) {
     badCount = allGauges[i]->lowCount + allGauges[i]->highCount;
     totalCount = badCount + allGauges[i]->goodCount;
     percent = badCount * 100 / totalCount;
-    if(percent > 9) {
-      Serial.println(allGauges[i]->shortLabel);
-      Serial.println(allGauges[i]->lowCount);
-      Serial.println(allGauges[i]->highCount);
-      Serial.println(allGauges[i]->goodCount);
-      return true;
+    if(percent > 4) {
+      inError = true;
+    }
+    if(totalCount > 2000) {
+      allGauges[i]->lowCount = allGauges[i]->lowCount * 0.8;
+      allGauges[i]->highCount = allGauges[i]->highCount * 0.8;
+      allGauges[i]->goodCount = allGauges[i]->goodCount * 0.8;
     }
   }
-  return false;
+  return inError;
 }
 
