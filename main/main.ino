@@ -2,8 +2,13 @@
 #include <mcp_can_dfs.h>
 #include <LiquidCrystal.h>
 
-//RS,EN,DB4,DB5,DB6,DB7
-LiquidCrystal lcd(14, 3, 4, 5, 6, 7);
+// SET UP PINS ///////////////////////////////////////////
+
+LiquidCrystal lcd(14, 3, 4, 5, 6, 7); //RS,EN,DB4,DB5,DB6,DB7
+const byte LED_PIN = 15;
+const byte SPI_CS_PIN = 10;
+
+// CREATE CUSTOM LCD CHARACTERS //////////////////////////
 
 byte fill1[8] = {
   B10000,
@@ -56,6 +61,8 @@ byte fill5[8] = {
   B11111
 };
 
+// BUILD ENGINE VARIABLES ///////////////////////////////////////
+
 struct EngineVariable
 {
   char* shortLabel;
@@ -69,58 +76,61 @@ struct EngineVariable
   unsigned long highCount;
 };
 
-EngineVariable engine_map   = {"MAP", 0.0, 0.0, 15.0, 250.0, 1, 0, 0};    //manifold absolute pressure
-EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, 0, 0, 0};    //engine rpm
-EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 20.0, 240.0, 0, 0, 0};    //coolant temp
-EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, 0, 0, 0};     //throttle position
-EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 20.0, 3, 0, 0};      //injector pulse width bank 1
-EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 20.0, 3, 0, 0};      //injector pulse width bank 2
-EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 40.0, 150.0, 0, 0, 0};    //intake air temp aka 'mat'
-EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 40.0, 1, 0, 0};     //ignition advance
-EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, 1, 0, 0};     //afr target
-EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, 1, 0, 0};     //air fuel ratio
-EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0, 0, 0};    //ego correction %
-EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 0.0, 2000.0, 0, 0, 0};  //exhaust gas temp
-EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3, 0, 0};      //injector pulse width sequential
-EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 8.0, 18.0, 1, 0, 0};      //battery voltage
-EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 999.0, 1, 0, 0};     //generic sensor 1
-EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 999.0, 1, 0, 0};     //generic sensor 2
-EngineVariable engine_knk   = {"KNK", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //knock ignition retard
-EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 160.0, 0, 0, 0};     //vehicle speed
-EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //traction control ignition retard
-EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 50.0, 1, 0, 0};      //launch control timing
+const byte ENGINE_VARIABLE_COUNT = 20;
+EngineVariable* allGauges[ENGINE_VARIABLE_COUNT];
 
-EngineVariable* allGauges[20];
+EngineVariable engine_map   = {"MAP", 0.0, 0.0, 15.0, 250.0, 1, 0, 0, 0};     //manifold absolute pressure
+EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, 0, 0, 0, 0};     //engine rpm
+EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 20.0, 240.0, 0, 0, 0, 0};     //coolant temp
+EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, 0, 0, 0, 0};      //throttle position
+EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 20.0, 3, 0, 0, 0};       //injector pulse width bank 1
+EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 20.0, 3, 0, 0, 0};       //injector pulse width bank 2
+EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 40.0, 150.0, 0, 0, 0, 0};     //intake air temp aka 'mat'
+EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 40.0, 1, 0, 0, 0};      //ignition advance
+EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, 1, 0, 0, 0};      //afr target
+EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, 1, 0, 0, 0};      //air fuel ratio
+EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0, 0, 0, 0};     //ego correction %
+EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 0.0, 2000.0, 0, 0, 0, 0};     //exhaust gas temp
+EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3, 0, 0, 0};       //injector pulse width sequential
+EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 8.0, 18.0, 1, 0, 0, 0};       //battery voltage
+EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 999.0, 1, 0, 0, 0};      //generic sensor 1
+EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 999.0, 1, 0, 0, 0};      //generic sensor 2
+EngineVariable engine_knk   = {"KNK", 0.0, 0.0, 0.0, 50.0, 1, 0, 0, 0};       //knock ignition retard
+EngineVariable engine_vss   = {"VSS", 0.0, 0.0, 0.0, 160.0, 0, 0, 0, 0};      //vehicle speed
+EngineVariable engine_tcr   = {"TCR", 0.0, 0.0, 0.0, 50.0, 1, 0, 0, 0};       //traction control ignition retard
+EngineVariable engine_lct   = {"LCT", 0.0, 0.0, 0.0, 50.0, 1, 0, 0, 0};       //launch control timing
+
+// LOOP TIMER VARIABLES ///////////////////////////////
 
 unsigned long currentMillis = 0;
-
 byte displayInterval = 100;
 unsigned long lastDisplayMillis = 0;
-
 unsigned int diagnosticInterval = 5000;
 unsigned long lastDiagnosticMillis = 0;
 
-const int SPI_CS_PIN = 10;
+// GAUGE ARRAYS FOR EACH MODE ////////////////////////
 
 EngineVariable* dualModeGauges[3][2];
 EngineVariable* quadModeGauges[2][4];
 EngineVariable* octoModeGauges[1][8];
 
+// MODE VARIABLES ////////////////////////////////////
+
 bool dualModeReady = false;
 bool quadModeReady = false;
 bool octoModeReady = false;
+bool diagModeReady = false;
 
 bool dualModeIndex = 0;
 bool quadModeIndex = 0;
 bool octoModeIndex = 0;
-
 bool inError = false;
 
 MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
 
-  pinMode(2, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
 
   lcd.createChar(0, fill1);
   lcd.createChar(1, fill2);
@@ -168,15 +178,16 @@ void setup() {
   
   lcd.begin(20, 4);
 
+
+
   Serial.begin(115200);
   while (CAN_OK != CAN.begin(CAN_500KBPS)) {
-    Serial.println(F("CAN bus init fail"));
+    lcd.print(F("Waiting for CAN bus"));
+    lcd.setCursor(0, 0);    
     delay(100);
   }
-  Serial.println(F("COMM OK"));
 
   lcd.clear();
-  
 }
 
 void loop() {
@@ -193,15 +204,10 @@ void loop() {
   if(currentMillis - lastDiagnosticMillis >= diagnosticInterval && currentMillis > 500) {
     lastDiagnosticMillis = currentMillis;
     bool err = calculate_error_light();
-
     if(err != inError) {
       inError = err;
-      digitalWrite(2, err);  
+      digitalWrite(LED_PIN, err);  
     }
-
-    
-    
-    //Serial.println(err);
   }
 }
 
@@ -210,6 +216,7 @@ void clear_mode() {
   dualModeReady = false;
   quadModeReady = false;
   octoModeReady = false;
+  diagModeReady = false;
   lcd.clear();
 }
 
@@ -632,7 +639,7 @@ bool calculate_error_light() {
     if(percent > 4) {
       inError = true;
     }
-    if(totalCount > 2000) {
+    if(totalCount > 1000) {
       allGauges[i]->lowCount = allGauges[i]->lowCount * 0.8;
       allGauges[i]->highCount = allGauges[i]->highCount * 0.8;
       allGauges[i]->goodCount = allGauges[i]->goodCount * 0.8;
