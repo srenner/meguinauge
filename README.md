@@ -10,6 +10,9 @@
 * [Arduino UNO](https://www.arduino.cc/en/main/arduinoBoardUno)
 * [CAN-BUS shield](https://www.sparkfun.com/products/13262) from Sparkfun
 * [20x4 LCD display](https://www.adafruit.com/products/499) from Adafruit
+* Red LED for error light (optional)
+* Button to select gauge (optional)
+* Button to select mode (optional)
 
 ## Extra Arduino dependencies
 * [CAN-BUS library](https://github.com/Seeed-Studio/CAN_BUS_Shield) from Seeed-Studio.
