@@ -8,6 +8,17 @@ LiquidCrystal lcd(14, 3, 4, 5, 6, 7); //RS,EN,DB4,DB5,DB6,DB7
 const byte LED_PIN = 15;
 const byte SPI_CS_PIN = 10;
 
+const byte MODE_PIN = 9;
+//button pin results with internal pullup:
+//2 mostly works but is very noisy
+//8 is always low
+//9 works
+//11,12 interrups canbus even though not declared in this file
+//16, 17 doesn't work
+//18 works
+//19 doesn't work
+
+
 // CREATE CUSTOM LCD CHARACTERS //////////////////////////
 
 byte fill1[8] = {
@@ -131,6 +142,8 @@ MCP_CAN CAN(SPI_CS_PIN);
 void setup() {
 
   pinMode(LED_PIN, OUTPUT);
+  pinMode(MODE_PIN, INPUT_PULLUP);
+  //digitalWrite(MODE_PIN, INPUT_PULLUP);
 
   lcd.createChar(0, fill1);
   lcd.createChar(1, fill2);
@@ -209,6 +222,10 @@ void loop() {
       digitalWrite(LED_PIN, err);  
     }
   }
+
+  bool modeButton = digitalRead(MODE_PIN);
+  //Serial.println(modeButton);
+  
 }
 
 
