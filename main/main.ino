@@ -156,14 +156,15 @@ bool quadModeIndex = 0;
 bool octoModeIndex = 0;
 bool inError = false;
 
-bool currentModeButton = 1; //default to high, 0 when pressed
+bool currentModeButton = 1;
 bool previousModeButton = 1;
+unsigned long modeButtonMillis = 0;
 
 MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
   
-  currentMode = octo;
+  currentMode = quad;
 
   pinMode(LED_PIN, OUTPUT);
   pinMode(MODE_PIN, INPUT_PULLUP);
@@ -226,6 +227,11 @@ void setup() {
   }
 
   lcd.clear();
+
+  /*currentModeButton = digitalRead(MODE_PIN);
+  previousModeButton = currentModeButton;
+  Serial.println(currentModeButton);
+  Serial.println(previousModeButton);*/
 }
 
 void loop() {
@@ -257,9 +263,18 @@ void loop() {
 
   previousModeButton = currentModeButton;
   currentModeButton = digitalRead(MODE_PIN);
+  /*Serial.println("=====");
+  Serial.println(currentModeButton);
+  Serial.println(previousModeButton);*/
   if(currentModeButton != previousModeButton) {
     if(currentModeButton == 0) {
+      modeButtonMillis = currentMillis;
       next_mode();
+    }
+    else {
+      if((currentMillis - modeButtonMillis) < 250) {
+        currentModeButton = 0;
+      }
     }
   }
   
