@@ -156,6 +156,9 @@ bool quadModeIndex = 0;
 bool octoModeIndex = 0;
 bool inError = false;
 
+bool currentModeButton = 1; //default to high, 0 when pressed
+bool previousModeButton = 1;
+
 MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
@@ -252,7 +255,14 @@ void loop() {
     }
   }
 
-  bool modeButton = digitalRead(MODE_PIN);
+  previousModeButton = currentModeButton;
+  currentModeButton = digitalRead(MODE_PIN);
+  if(currentModeButton != previousModeButton) {
+    if(currentModeButton == 0) {
+      next_mode();
+    }
+  }
+  
   //Serial.println(modeButton);
   
 }
