@@ -127,6 +127,14 @@ EngineVariable* octoModeGauges[1][8];
 
 // MODE VARIABLES ////////////////////////////////////
 
+enum Mode {
+  dual,
+  quad,
+  octo,
+  diag
+};
+Mode currentMode;
+
 bool dualModeReady = false;
 bool quadModeReady = false;
 bool octoModeReady = false;
@@ -140,6 +148,8 @@ bool inError = false;
 MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
+  
+  currentMode = octo;
 
   pinMode(LED_PIN, OUTPUT);
   pinMode(MODE_PIN, INPUT_PULLUP);
@@ -209,9 +219,16 @@ void loop() {
   currentMillis = millis();
   if(currentMillis - lastDisplayMillis >= displayInterval && currentMillis > 500) {
     lastDisplayMillis = currentMillis;
-      //draw_octo_gauges();
-      //draw_dual_gauges();
-      draw_quad_gauges();
+
+      if(currentMode == dual) {
+        draw_dual_gauges();
+      }
+      else if(currentMode == quad) {
+        draw_quad_gauges();
+      }
+      else if(currentMode == octo) {
+        draw_octo_gauges();
+      }
   }
 
   if(currentMillis - lastDiagnosticMillis >= diagnosticInterval && currentMillis > 500) {
@@ -228,6 +245,18 @@ void loop() {
   
 }
 
+void next_mode() {
+  if(currentMode == dual) {
+    currentMode = quad;
+  }
+  else if(currentMode == quad) {
+    currentMode = octo;
+  }
+  else if(currentMode = octo) {
+    currentMode = dual;
+  }
+  //diag mode is not implemented yet
+}
 
 void clear_mode() {
   dualModeReady = false;
