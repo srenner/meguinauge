@@ -72,6 +72,17 @@ byte fill5[8] = {
   B11111
 };
 
+byte fillMiddle[8] = {
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100  
+};
+
 // BUILD ENGINE VARIABLES ///////////////////////////////////////
 
 struct EngineVariable
@@ -94,15 +105,15 @@ EngineVariable engine_map   = {"MAP", 0.0, 0.0, 15.0, 250.0, 1, 0, 0, 0};     //
 EngineVariable engine_rpm   = {"RPM", 0.0, 0.0, 0.0, 6500.0, 0, 0, 0, 0};     //engine rpm
 EngineVariable engine_clt   = {"CLT", 0.0, 0.0, 20.0, 240.0, 0, 0, 0, 0};     //coolant temp
 EngineVariable engine_tps   = {"TPS", 0.0, 0.0, 0.0, 100.0, 0, 0, 0, 0};      //throttle position
-EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 20.0, 3, 0, 0, 0};       //injector pulse width bank 1
-EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 20.0, 3, 0, 0, 0};       //injector pulse width bank 2
+EngineVariable engine_pw1   = {"PW1", 0.0, 0.0, 0.0, 20.0, 2, 0, 0, 0};       //injector pulse width bank 1
+EngineVariable engine_pw2   = {"PW2", 0.0, 0.0, 0.0, 20.0, 2, 0, 0, 0};       //injector pulse width bank 2
 EngineVariable engine_iat   = {"IAT", 0.0, 0.0, 40.0, 150.0, 0, 0, 0, 0};     //intake air temp aka 'mat'
 EngineVariable engine_adv   = {"ADV", 0.0, 0.0, 10.0, 40.0, 1, 0, 0, 0};      //ignition advance
 EngineVariable engine_tgt   = {"TGT", 0.0, 0.0, 10.0, 20.0, 1, 0, 0, 0};      //afr target
 EngineVariable engine_afr   = {"AFR", 0.0, 0.0, 10.0, 20.0, 1, 0, 0, 0};      //air fuel ratio
 EngineVariable engine_ego   = {"EGO", 0.0, 0.0, 70.0, 130.0, 0, 0, 0, 0};     //ego correction %
 EngineVariable engine_egt   = {"EGT", 0.0, 0.0, 0.0, 2000.0, 0, 0, 0, 0};     //exhaust gas temp
-EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 3, 0, 0, 0};       //injector pulse width sequential
+EngineVariable engine_pws   = {"PWS", 0.0, 0.0, 0.0, 20.0, 2, 0, 0, 0};       //injector pulse width sequential
 EngineVariable engine_bat   = {"BAT", 0.0, 0.0, 8.0, 18.0, 1, 0, 0, 0};       //battery voltage
 EngineVariable engine_sr1   = {"SR1", 0.0, 0.0, 0.0, 999.0, 1, 0, 0, 0};      //generic sensor 1
 EngineVariable engine_sr2   = {"SR2", 0.0, 0.0, 0.0, 999.0, 1, 0, 0, 0};      //generic sensor 2
@@ -160,6 +171,7 @@ void setup() {
   lcd.createChar(2, fill3);
   lcd.createChar(3, fill4);
   lcd.createChar(4, fill5);
+  lcd.createChar(5, fillMiddle);
   
   octoModeGauges[0][0] = &engine_rpm;
   octoModeGauges[0][1] = &engine_map;
@@ -358,13 +370,13 @@ void draw_octo_gauges() {
 
     //draw dividing line
     lcd.setCursor(9, 0);
-    lcd.write(byte(4));
+    lcd.write(byte(5));
     lcd.setCursor(9, 1);
-    lcd.write(byte(4));
+    lcd.write(byte(5));
     lcd.setCursor(9, 2);
-    lcd.write(byte(4));
+    lcd.write(byte(5));
     lcd.setCursor(9, 3);
-    lcd.write(byte(4));
+    lcd.write(byte(5));
 
     //right column of labels
     lcd.setCursor(11, 0);
