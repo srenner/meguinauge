@@ -9,6 +9,7 @@ const byte LED_PIN = 15;
 const byte SPI_CS_PIN = 10;
 
 const byte MODE_PIN = 9;
+const byte GAUGE_PIN = 18;
 //button pin results with internal pullup:
 //2 mostly works but is very noisy
 //8 is always low
@@ -160,6 +161,12 @@ bool currentModeButton = 1;
 bool previousModeButton = 1;
 unsigned long modeButtonMillis = 0;
 
+bool currentGaugeButton = 1;
+bool previousGaugeButton = 1;
+unsigned long gaugeButtonMillis = 0;
+
+const byte DEBOUNCE_DELAY = 250;
+
 MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
@@ -168,6 +175,7 @@ void setup() {
 
   pinMode(LED_PIN, OUTPUT);
   pinMode(MODE_PIN, INPUT_PULLUP);
+  pinMode(GAUGE_PIN, INPUT_PULLUP);
   //digitalWrite(MODE_PIN, INPUT_PULLUP);
 
   lcd.createChar(0, fill1);
@@ -263,23 +271,31 @@ void loop() {
 
   previousModeButton = currentModeButton;
   currentModeButton = digitalRead(MODE_PIN);
-  /*Serial.println("=====");
-  Serial.println(currentModeButton);
-  Serial.println(previousModeButton);*/
   if(currentModeButton != previousModeButton) {
     if(currentModeButton == 0) {
       modeButtonMillis = currentMillis;
       next_mode();
     }
     else {
-      if((currentMillis - modeButtonMillis) < 250) {
+      if((currentMillis - modeButtonMillis) < DEBOUNCE_DELAY) {
         currentModeButton = 0;
       }
     }
   }
-  
-  //Serial.println(modeButton);
-  
+
+  previousGaugeButton = currentGaugeButton;
+  currentGaugeButton = digitalRead(GAUGE_PIN);
+  if(currentGaugeButton != previousGaugeButton) {
+    if(currentGaugeButton == 0) {
+      gaugeButtonMillis = currentMillis;
+      Serial.println("next gauge");
+    }
+    else {
+      if((currentMillis - gaugeButtonMillis) < DEBOUNCE_DELAY) {
+        currentGaugeButton = 0;
+      }
+    }
+  }
 }
 
 void next_mode() {
@@ -289,7 +305,7 @@ void next_mode() {
   else if(currentMode == quad) {
     currentMode = octo;
   }
-  else if(currentMode == octo) {
+  else if(currentMode = octo) {
     currentMode = dual;
   }
   //diag mode is not implemented yet
