@@ -305,7 +305,7 @@ void next_mode() {
   else if(currentMode == quad) {
     currentMode = octo;
   }
-  else if(currentMode = octo) {
+  else if(currentMode == octo) {
     currentMode = dual;
   }
   //diag mode is not implemented yet
