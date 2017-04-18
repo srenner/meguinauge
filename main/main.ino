@@ -133,9 +133,17 @@ unsigned long lastDiagnosticMillis = 0;
 
 // GAUGE ARRAYS FOR EACH MODE ////////////////////////
 
-EngineVariable* dualModeGauges[3][2];
-EngineVariable* quadModeGauges[2][4];
-EngineVariable* octoModeGauges[1][8];
+const byte DUAL_LEN = 3;
+const byte QUAD_LEN = 2;
+const byte OCTO_LEN = 1;
+
+byte dualIndex = 0;
+byte quadIndex = 0;
+byte octoIndex = 0;
+
+EngineVariable* dualModeGauges[DUAL_LEN][2];
+EngineVariable* quadModeGauges[QUAD_LEN][4];
+EngineVariable* octoModeGauges[OCTO_LEN][8];
 
 // MODE VARIABLES ////////////////////////////////////
 
@@ -152,9 +160,6 @@ bool quadModeReady = false;
 bool octoModeReady = false;
 bool diagModeReady = false;
 
-bool dualModeIndex = 0;
-bool quadModeIndex = 0;
-bool octoModeIndex = 0;
 bool inError = false;
 
 bool currentModeButton = 1;
@@ -197,10 +202,23 @@ void setup() {
   dualModeGauges[0][0] = &engine_rpm;
   dualModeGauges[0][1] = &engine_afr;
 
+  dualModeGauges[1][0] = &engine_map;
+  dualModeGauges[1][1] = &engine_afr;
+
+  dualModeGauges[2][0] = &engine_afr;
+  dualModeGauges[2][1] = &engine_tgt;
+
   quadModeGauges[0][0] = &engine_rpm;
   quadModeGauges[0][1] = &engine_map;
   quadModeGauges[0][2] = &engine_afr;
   quadModeGauges[0][3] = &engine_tps;
+
+  quadModeGauges[1][0] = &engine_map;
+  quadModeGauges[1][1] = &engine_afr;
+  quadModeGauges[1][2] = &engine_clt;
+  quadModeGauges[1][3] = &engine_iat;
+
+
   
   allGauges[0] = &engine_map;
   allGauges[1] = &engine_rpm;
@@ -289,6 +307,7 @@ void loop() {
     if(currentGaugeButton == 0) {
       gaugeButtonMillis = currentMillis;
       Serial.println("next gauge");
+      next_gauge();
     }
     else {
       if((currentMillis - gaugeButtonMillis) < DEBOUNCE_DELAY) {
@@ -311,6 +330,39 @@ void next_mode() {
   //diag mode is not implemented yet
 }
 
+void next_gauge() {
+
+  clear_mode();
+  
+  if(currentMode == dual) {
+    if(dualIndex == (DUAL_LEN - 1)) {
+      dualIndex = 0; 
+    }
+    else {
+      dualIndex++;
+    }
+  }
+  else if(currentMode == quad) {
+    if(quadIndex == (QUAD_LEN - 1)) {
+      quadIndex = 0;
+    }
+    else {
+      quadIndex++;
+    }
+  }
+  else if(currentMode == octo) {
+    if(octoIndex == (OCTO_LEN - 1)) {
+      octoIndex = 0;
+    }
+    else {
+      octoIndex++;
+    }
+  }
+  else {
+    Serial.println("unknown mode");
+  }
+}
+
 void clear_mode() {
   dualModeReady = false;
   quadModeReady = false;
@@ -323,28 +375,28 @@ void draw_dual_gauges() {
   if(!dualModeReady) {
     clear_mode();
     lcd.setCursor(0, 0);
-    lcd.print(dualModeGauges[0][0]->shortLabel);
+    lcd.print(dualModeGauges[dualIndex][0]->shortLabel);
     lcd.setCursor(0, 2);
-    lcd.print(dualModeGauges[0][1]->shortLabel);
+    lcd.print(dualModeGauges[dualIndex][1]->shortLabel);
     dualModeReady = true;
   }
-  //if(dualModeGauges[0][0]->currentValue != dualModeGauges[0][0]->previousValue) {
+  //if(dualModeGauges[0][0]->currentValue != dualModeGauges[dualIndex][0]->previousValue) {
     lcd.setCursor(4, 0);
     if(is_current_value_shorter(*dualModeGauges[0][0])) {
       lcd.print(F("     "));
       lcd.setCursor(4, 0);
     }
-    lcd.print(dualModeGauges[0][0]->currentValue, dualModeGauges[0][0]->decimalPlaces);
-    draw_bar(*dualModeGauges[0][0], 1, 0);
+    lcd.print(dualModeGauges[dualIndex][0]->currentValue, dualModeGauges[dualIndex][0]->decimalPlaces);
+    draw_bar(*dualModeGauges[dualIndex][0], 1, 0);
   //}
   //if(dualModeGauges[0][1]->currentValue != dualModeGauges[0][1]->previousValue) {
     lcd.setCursor(4, 2);
-    if(is_current_value_shorter(*dualModeGauges[0][1])) {
+    if(is_current_value_shorter(*dualModeGauges[dualIndex][1])) {
       lcd.print(F("     "));
       lcd.setCursor(4, 2);
     }
-    lcd.print(dualModeGauges[0][1]->currentValue, dualModeGauges[0][1]->decimalPlaces);
-    draw_bar(*dualModeGauges[0][1], 3, 0);
+    lcd.print(dualModeGauges[dualIndex][1]->currentValue, dualModeGauges[dualIndex][1]->decimalPlaces);
+    draw_bar(*dualModeGauges[dualIndex][1], 3, 0);
   //}
 }
 
@@ -352,47 +404,47 @@ void draw_quad_gauges() {
   if(!quadModeReady) {
     clear_mode();
     lcd.setCursor(0, 0);
-    lcd.print(quadModeGauges[0][0]->shortLabel);
+    lcd.print(quadModeGauges[quadIndex][0]->shortLabel);
     lcd.setCursor(0, 1);
-    lcd.print(quadModeGauges[0][1]->shortLabel);
+    lcd.print(quadModeGauges[quadIndex][1]->shortLabel);
     lcd.setCursor(0, 2);
-    lcd.print(quadModeGauges[0][2]->shortLabel);
+    lcd.print(quadModeGauges[quadIndex][2]->shortLabel);
     lcd.setCursor(0, 3);
-    lcd.print(quadModeGauges[0][3]->shortLabel);
+    lcd.print(quadModeGauges[quadIndex][3]->shortLabel);
     quadModeReady = true;
   }
 
   lcd.setCursor(4, 0);
-  if(is_current_value_shorter(*quadModeGauges[0][0])) {
+  if(is_current_value_shorter(*quadModeGauges[quadIndex][0])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 0);
   }
-  lcd.print(quadModeGauges[0][0]->currentValue, quadModeGauges[0][0]->decimalPlaces);
-  draw_bar(*quadModeGauges[0][0], 0, 9);
+  lcd.print(quadModeGauges[quadIndex][0]->currentValue, quadModeGauges[quadIndex][0]->decimalPlaces);
+  draw_bar(*quadModeGauges[quadIndex][0], 0, 9);
 
   lcd.setCursor(4, 1);
-  if(is_current_value_shorter(*quadModeGauges[0][1])) {
+  if(is_current_value_shorter(*quadModeGauges[quadIndex][1])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 1);
   }
-  lcd.print(quadModeGauges[0][1]->currentValue, quadModeGauges[0][1]->decimalPlaces);
-  draw_bar(*quadModeGauges[0][1], 1, 9);
+  lcd.print(quadModeGauges[quadIndex][1]->currentValue, quadModeGauges[quadIndex][1]->decimalPlaces);
+  draw_bar(*quadModeGauges[quadIndex][1], 1, 9);
 
   lcd.setCursor(4, 2);
-  if(is_current_value_shorter(*quadModeGauges[0][2])) {
+  if(is_current_value_shorter(*quadModeGauges[quadIndex][2])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 2);
   }
-  lcd.print(quadModeGauges[0][2]->currentValue, quadModeGauges[0][2]->decimalPlaces);
-  draw_bar(*quadModeGauges[0][2], 2, 9);
+  lcd.print(quadModeGauges[quadIndex][2]->currentValue, quadModeGauges[quadIndex][2]->decimalPlaces);
+  draw_bar(*quadModeGauges[quadIndex][2], 2, 9);
 
   lcd.setCursor(4, 3);
-  if(is_current_value_shorter(*quadModeGauges[0][3])) {
+  if(is_current_value_shorter(*quadModeGauges[quadIndex][3])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 3);
   }
-  lcd.print(quadModeGauges[0][3]->currentValue, quadModeGauges[0][3]->decimalPlaces);
-  draw_bar(*quadModeGauges[0][3], 3, 9);
+  lcd.print(quadModeGauges[quadIndex][3]->currentValue, quadModeGauges[quadIndex][3]->decimalPlaces);
+  draw_bar(*quadModeGauges[quadIndex][3], 3, 9);
 }
 
 void draw_octo_gauges() {
@@ -401,13 +453,13 @@ void draw_octo_gauges() {
     clear_mode();
     //left column of labels
     lcd.setCursor(0, 0);
-    lcd.print(octoModeGauges[0][0]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][0]->shortLabel);
     lcd.setCursor(0, 1);
-    lcd.print(octoModeGauges[0][1]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][1]->shortLabel);
     lcd.setCursor(0, 2);
-    lcd.print(octoModeGauges[0][2]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][2]->shortLabel);
     lcd.setCursor(0, 3);
-    lcd.print(octoModeGauges[0][3]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][3]->shortLabel);
 
     //draw dividing line
     lcd.setCursor(9, 0);
@@ -421,72 +473,72 @@ void draw_octo_gauges() {
 
     //right column of labels
     lcd.setCursor(11, 0);
-    lcd.print(octoModeGauges[0][4]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][4]->shortLabel);
     lcd.setCursor(11, 1);
-    lcd.print(octoModeGauges[0][5]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][5]->shortLabel);
     lcd.setCursor(11, 2);
-    lcd.print(octoModeGauges[0][6]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][6]->shortLabel);
     lcd.setCursor(11, 3);
-    lcd.print(octoModeGauges[0][7]->shortLabel);
+    lcd.print(octoModeGauges[octoIndex][7]->shortLabel);
 
     octoModeReady = true;
   }
   
   lcd.setCursor(4, 0);
-  if(is_current_value_shorter(*octoModeGauges[0][0])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][0])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 0);
   }
-  lcd.print(octoModeGauges[0][0]->currentValue, octoModeGauges[0][0]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][0]->currentValue, octoModeGauges[octoIndex][0]->decimalPlaces);
 
   lcd.setCursor(4, 1);
-  if(is_current_value_shorter(*octoModeGauges[0][1])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][1])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 1);
   }
-  lcd.print(octoModeGauges[0][1]->currentValue, octoModeGauges[0][1]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][1]->currentValue, octoModeGauges[octoIndex][1]->decimalPlaces);
 
   lcd.setCursor(4, 2);
-  if(is_current_value_shorter(*octoModeGauges[0][2])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][2])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 2);
   }
-  lcd.print(octoModeGauges[0][2]->currentValue, octoModeGauges[0][2]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][2]->currentValue, octoModeGauges[octoIndex][2]->decimalPlaces);
 
   lcd.setCursor(4, 3);
-  if(is_current_value_shorter(*octoModeGauges[0][3])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][3])) {
     lcd.print(F("     "));
     lcd.setCursor(4, 3);
   }
-  lcd.print(octoModeGauges[0][3]->currentValue, octoModeGauges[0][3]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][3]->currentValue, octoModeGauges[octoIndex][3]->decimalPlaces);
 
   lcd.setCursor(15, 0);
-  if(is_current_value_shorter(*octoModeGauges[0][4])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][4])) {
     lcd.print(F("     "));
     lcd.setCursor(15, 0);
   }
-  lcd.print(octoModeGauges[0][4]->currentValue, octoModeGauges[0][4]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][4]->currentValue, octoModeGauges[octoIndex][4]->decimalPlaces);
 
   lcd.setCursor(15, 1);
-  if(is_current_value_shorter(*octoModeGauges[0][5])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][5])) {
     lcd.print(F("     "));
     lcd.setCursor(15, 1);
   }
-  lcd.print(octoModeGauges[0][5]->currentValue, octoModeGauges[0][5]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][5]->currentValue, octoModeGauges[octoIndex][5]->decimalPlaces);
 
   lcd.setCursor(15, 2);
-  if(is_current_value_shorter(*octoModeGauges[0][6])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][6])) {
     lcd.print(F("     "));
     lcd.setCursor(15, 2);
   }
-  lcd.print(octoModeGauges[0][6]->currentValue, octoModeGauges[0][6]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][6]->currentValue, octoModeGauges[octoIndex][6]->decimalPlaces);
 
   lcd.setCursor(15, 3);
-  if(is_current_value_shorter(*octoModeGauges[0][7])) {
+  if(is_current_value_shorter(*octoModeGauges[octoIndex][7])) {
     lcd.print(F("     "));
     lcd.setCursor(15, 3);
   }
-  lcd.print(octoModeGauges[0][7]->currentValue, octoModeGauges[0][7]->decimalPlaces);
+  lcd.print(octoModeGauges[octoIndex][7]->currentValue, octoModeGauges[octoIndex][7]->decimalPlaces);
 }
 
 void load_from_can() {
