@@ -4,7 +4,7 @@
 
 ## Overview
 * Provides a vehicle gauge that can display 2 - 8 different engine parameters at a time.
-* Designed for a mid-'80s aesthetic. For modern looking gauges, check out tablet and Pi based solutions.
+* Designed for a 1980s-1990s aesthetic. For modern looking gauges, check out tablet and Pi based solutions.
 
 ## Hardware details
 * [Arduino UNO](https://www.arduino.cc/en/main/arduinoBoardUno) or compatible board
