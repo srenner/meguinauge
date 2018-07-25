@@ -25,65 +25,65 @@ const byte GAUGE_PIN = 18;
 // CREATE CUSTOM LCD CHARACTERS //////////////////////////
 
 byte fill1[8] = {
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10
 };
 byte fill2[8] = {
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18
 };
 byte fill3[8] = {
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C
 };
 byte fill4[8] = {
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E
 };
 byte fill5[8] = {
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F
 };
 
 byte fillMiddle[8] = {
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100  
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04  
 };
 
 // BUILD ENGINE VARIABLES ///////////////////////////////////////
@@ -185,18 +185,17 @@ void setup() {
   pinMode(GAUGE_PIN, INPUT_PULLUP);
   //digitalWrite(MODE_PIN, INPUT_PULLUP);
 
-  // create a custom character
-  lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)0);     // location #0
-  lcd.write((uint8_t)0x00);  // 8 bytes of character data
-  lcd.write(0x0A);
-  lcd.write(0x15);
-  lcd.write(0x11);
-  lcd.write(0x11);
-  lcd.write(0x0A);
-  lcd.write(0x04);
-  lcd.write((uint8_t)0x00);
+
+  
+
+
+
+
+
+
+
+
+
 
 
 
@@ -264,6 +263,7 @@ void setup() {
   lcd.write(0xD1);
   lcd.write(20);
   lcd.write(4);
+  delay(10);
 
   // set the contrast
   lcd.write(0xFE);
@@ -279,6 +279,70 @@ void setup() {
 
   //lcd.write(0xFE);
   //lcd.write(0x58);
+
+  // create a custom character
+  // fill 1  
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)0);     // location #0
+  for(int i = 0; i < 8; i++) {
+    lcd.write(fill1[i]);
+  }
+  delay(10);
+
+  // create a custom character
+  // fill 2  
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)1);     // location #1
+  for(int i = 0; i < 8; i++) {
+    lcd.write(fill2[i]);
+  }
+  delay(10);
+
+  // create a custom character
+  // fill 3  
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)2);     // location #2
+    for(int i = 0; i < 8; i++) {
+    lcd.write(fill3[i]);
+  }
+  delay(10);
+
+  // create a custom character
+  // fill 4  
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)3);     // location #3
+    for(int i = 0; i < 8; i++) {
+    lcd.write(fill4[i]);
+  }
+  delay(10);
+
+  // create a custom character
+  // fill 5  
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)4);     // location #4
+  for(int i = 0; i < 8; i++) {
+    lcd.write(fill5[i]);
+  }
+  delay(10);
+  
+  // create a custom character
+  // fill middle  
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)5);     // location #4
+  for(int i = 0; i < 8; i++) {
+    lcd.write(fillMiddle[i]);
+  }
+  delay(10);
+
+
+
+
 
   clearSerialLCD(lcd);
 
@@ -299,6 +363,9 @@ void setup() {
   //lcd.clear();
   //lcd.write(0xFE);
   //lcd.write(0x58);
+
+
+  Serial.println((uint8_t)4);
 
   /*currentModeButton = digitalRead(MODE_PIN);
   previousModeButton = currentModeButton;
@@ -816,10 +883,14 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
     
     setSerialCursor(lcd, column, row);
     for(int i = 0; i < fullBars; i++) {
-      lcd.write(byte(4));
+      //lcd.write(byte(4));
+      lcd.write((uint8_t)4);
+      
     }
     if(partialBars > 0) {
-      lcd.write(byte(partialBars - 1));    
+      //Serial.println("printing a partial bar " + partialBars);
+      //lcd.write(byte(partialBars - 1));
+      lcd.write((uint8_t)partialBars-1);
     }  
   }  
 }
