@@ -1,10 +1,12 @@
 #include <mcp_can.h>
 #include <mcp_can_dfs.h>
-#include <LiquidCrystal.h>
+//#include <LiquidCrystal.h>
+#include <SoftwareSerial.h>
 
 // SET UP PINS ///////////////////////////////////////////
 
-LiquidCrystal lcd(14, 3, 4, 5, 6, 7); //RS,EN,DB4,DB5,DB6,DB7
+//LiquidCrystal lcd(14, 3, 4, 5, 6, 7); //RS,EN,DB4,DB5,DB6,DB7
+SoftwareSerial lcd(0,3);
 const byte LED_PIN = 15;
 const byte SPI_CS_PIN = 10;
 
@@ -23,65 +25,65 @@ const byte GAUGE_PIN = 18;
 // CREATE CUSTOM LCD CHARACTERS //////////////////////////
 
 byte fill1[8] = {
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000,
-  B10000
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10,
+  0x10
 };
 byte fill2[8] = {
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000,
-  B11000
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18,
+  0x18
 };
 byte fill3[8] = {
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100,
-  B11100
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C,
+  0x1C
 };
 byte fill4[8] = {
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110,
-  B11110
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E,
+  0x1E
 };
 byte fill5[8] = {
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111,
-  B11111
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F,
+  0x1F
 };
 
 byte fillMiddle[8] = {
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B00100  
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04,
+  0x04  
 };
 
 // BUILD ENGINE VARIABLES ///////////////////////////////////////
@@ -182,13 +184,6 @@ void setup() {
   pinMode(MODE_PIN, INPUT_PULLUP);
   pinMode(GAUGE_PIN, INPUT_PULLUP);
   //digitalWrite(MODE_PIN, INPUT_PULLUP);
-
-  lcd.createChar(0, fill1);
-  lcd.createChar(1, fill2);
-  lcd.createChar(2, fill3);
-  lcd.createChar(3, fill4);
-  lcd.createChar(4, fill5);
-  lcd.createChar(5, fillMiddle);
   
   octoModeGauges[0][0] = &engine_rpm;
   octoModeGauges[0][1] = &engine_map;
@@ -217,8 +212,6 @@ void setup() {
   quadModeGauges[1][1] = &engine_afr;
   quadModeGauges[1][2] = &engine_clt;
   quadModeGauges[1][3] = &engine_iat;
-
-
   
   allGauges[0] = &engine_map;
   allGauges[1] = &engine_rpm;
@@ -241,23 +234,55 @@ void setup() {
   allGauges[18] = &engine_tcr;
   allGauges[19] = &engine_lct;
   
-  lcd.begin(20, 4);
+  lcd.begin(9600);
+  // set the size of the display
+  lcd.write(0xFE);
+  lcd.write(0xD1);
+  lcd.write(20);
+  lcd.write(4);
+  delay(10);
 
+  // set the contrast
+  lcd.write(0xFE);
+  lcd.write(0x50);
+  lcd.write(240);
+  delay(10);       
+  
+  // set the brightness
+  lcd.write(0xFE);
+  lcd.write(0x99);
+  lcd.write(255);
+  delay(10);      
 
+  // set the backlight color
+  lcd.write(0xFE);
+  lcd.write(0xD0);
+  lcd.write(255);         // red 
+  lcd.write((uint8_t)0);  // green
+  lcd.write((uint8_t)0);  // blue
+  delay(10);
+  
+  createCustomSerialChar(lcd, 0, fill1);
+  createCustomSerialChar(lcd, 1, fill2);
+  createCustomSerialChar(lcd, 2, fill3);
+  createCustomSerialChar(lcd, 3, fill4);
+  createCustomSerialChar(lcd, 4, fill5);
+  createCustomSerialChar(lcd, 5, fillMiddle);
+ 
+  clearSerialLCD(lcd);
+
+  setSerialCursor(lcd, 0, 0);
+  lcd.print("Starting up...");
 
   Serial.begin(115200);
   while (CAN_OK != CAN.begin(CAN_500KBPS)) {
     lcd.print(F("Waiting for CAN bus"));
-    lcd.setCursor(0, 0);    
+    setSerialCursor(lcd,0, 0);    
     delay(100);
   }
-
-  lcd.clear();
-
-  /*currentModeButton = digitalRead(MODE_PIN);
-  previousModeButton = currentModeButton;
-  Serial.println(currentModeButton);
-  Serial.println(previousModeButton);*/
+    setSerialCursor(lcd,0, 0);    
+    lcd.print(F("Connected to ECU"));
+    setSerialCursor(lcd,0, 0);    
 }
 
 void loop() {
@@ -368,32 +393,34 @@ void clear_mode() {
   quadModeReady = false;
   octoModeReady = false;
   diagModeReady = false;
-  lcd.clear();
+  //lcd.clear();
+  lcd.write(0xFE);
+  lcd.write(0x58);
 }
 
 void draw_dual_gauges() {
   if(!dualModeReady) {
     clear_mode();
-    lcd.setCursor(0, 0);
+    setSerialCursor(lcd,0, 0);
     lcd.print(dualModeGauges[dualIndex][0]->shortLabel);
-    lcd.setCursor(0, 2);
+    setSerialCursor(lcd,0, 2);
     lcd.print(dualModeGauges[dualIndex][1]->shortLabel);
     dualModeReady = true;
   }
   //if(dualModeGauges[0][0]->currentValue != dualModeGauges[dualIndex][0]->previousValue) {
-    lcd.setCursor(4, 0);
+    setSerialCursor(lcd,4, 0);
     if(is_current_value_shorter(*dualModeGauges[0][0])) {
       lcd.print(F("     "));
-      lcd.setCursor(4, 0);
+      setSerialCursor(lcd,4, 0);
     }
     lcd.print(dualModeGauges[dualIndex][0]->currentValue, dualModeGauges[dualIndex][0]->decimalPlaces);
     draw_bar(*dualModeGauges[dualIndex][0], 1, 0);
   //}
   //if(dualModeGauges[0][1]->currentValue != dualModeGauges[0][1]->previousValue) {
-    lcd.setCursor(4, 2);
+    setSerialCursor(lcd,4, 2);
     if(is_current_value_shorter(*dualModeGauges[dualIndex][1])) {
       lcd.print(F("     "));
-      lcd.setCursor(4, 2);
+      setSerialCursor(lcd,4, 2);
     }
     lcd.print(dualModeGauges[dualIndex][1]->currentValue, dualModeGauges[dualIndex][1]->decimalPlaces);
     draw_bar(*dualModeGauges[dualIndex][1], 3, 0);
@@ -403,45 +430,45 @@ void draw_dual_gauges() {
 void draw_quad_gauges() {
   if(!quadModeReady) {
     clear_mode();
-    lcd.setCursor(0, 0);
+    setSerialCursor(lcd,0, 0);
     lcd.print(quadModeGauges[quadIndex][0]->shortLabel);
-    lcd.setCursor(0, 1);
+    setSerialCursor(lcd,0, 1);
     lcd.print(quadModeGauges[quadIndex][1]->shortLabel);
-    lcd.setCursor(0, 2);
+    setSerialCursor(lcd,0, 2);
     lcd.print(quadModeGauges[quadIndex][2]->shortLabel);
-    lcd.setCursor(0, 3);
+    setSerialCursor(lcd,0, 3);
     lcd.print(quadModeGauges[quadIndex][3]->shortLabel);
     quadModeReady = true;
   }
 
-  lcd.setCursor(4, 0);
+  setSerialCursor(lcd,4, 0);
   if(is_current_value_shorter(*quadModeGauges[quadIndex][0])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 0);
+    setSerialCursor(lcd,4, 0);
   }
   lcd.print(quadModeGauges[quadIndex][0]->currentValue, quadModeGauges[quadIndex][0]->decimalPlaces);
   draw_bar(*quadModeGauges[quadIndex][0], 0, 9);
 
-  lcd.setCursor(4, 1);
+  setSerialCursor(lcd,4, 1);
   if(is_current_value_shorter(*quadModeGauges[quadIndex][1])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 1);
+    setSerialCursor(lcd,4, 1);
   }
   lcd.print(quadModeGauges[quadIndex][1]->currentValue, quadModeGauges[quadIndex][1]->decimalPlaces);
   draw_bar(*quadModeGauges[quadIndex][1], 1, 9);
 
-  lcd.setCursor(4, 2);
+  setSerialCursor(lcd,4, 2);
   if(is_current_value_shorter(*quadModeGauges[quadIndex][2])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 2);
+    setSerialCursor(lcd,4, 2);
   }
   lcd.print(quadModeGauges[quadIndex][2]->currentValue, quadModeGauges[quadIndex][2]->decimalPlaces);
   draw_bar(*quadModeGauges[quadIndex][2], 2, 9);
 
-  lcd.setCursor(4, 3);
+  setSerialCursor(lcd,4, 3);
   if(is_current_value_shorter(*quadModeGauges[quadIndex][3])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 3);
+    setSerialCursor(lcd,4, 3);
   }
   lcd.print(quadModeGauges[quadIndex][3]->currentValue, quadModeGauges[quadIndex][3]->decimalPlaces);
   draw_bar(*quadModeGauges[quadIndex][3], 3, 9);
@@ -452,91 +479,91 @@ void draw_octo_gauges() {
   if(!octoModeReady) {
     clear_mode();
     //left column of labels
-    lcd.setCursor(0, 0);
+    setSerialCursor(lcd,0, 0);
     lcd.print(octoModeGauges[octoIndex][0]->shortLabel);
-    lcd.setCursor(0, 1);
+    setSerialCursor(lcd,0, 1);
     lcd.print(octoModeGauges[octoIndex][1]->shortLabel);
-    lcd.setCursor(0, 2);
+    setSerialCursor(lcd,0, 2);
     lcd.print(octoModeGauges[octoIndex][2]->shortLabel);
-    lcd.setCursor(0, 3);
+    setSerialCursor(lcd,0, 3);
     lcd.print(octoModeGauges[octoIndex][3]->shortLabel);
 
     //draw dividing line
-    lcd.setCursor(9, 0);
+    setSerialCursor(lcd,9, 0);
     lcd.write(byte(5));
-    lcd.setCursor(9, 1);
+    setSerialCursor(lcd,9, 1);
     lcd.write(byte(5));
-    lcd.setCursor(9, 2);
+    setSerialCursor(lcd,9, 2);
     lcd.write(byte(5));
-    lcd.setCursor(9, 3);
+    setSerialCursor(lcd,9, 3);
     lcd.write(byte(5));
 
     //right column of labels
-    lcd.setCursor(11, 0);
+    setSerialCursor(lcd,11, 0);
     lcd.print(octoModeGauges[octoIndex][4]->shortLabel);
-    lcd.setCursor(11, 1);
+    setSerialCursor(lcd,11, 1);
     lcd.print(octoModeGauges[octoIndex][5]->shortLabel);
-    lcd.setCursor(11, 2);
+    setSerialCursor(lcd,11, 2);
     lcd.print(octoModeGauges[octoIndex][6]->shortLabel);
-    lcd.setCursor(11, 3);
+    setSerialCursor(lcd,11, 3);
     lcd.print(octoModeGauges[octoIndex][7]->shortLabel);
 
     octoModeReady = true;
   }
   
-  lcd.setCursor(4, 0);
+  setSerialCursor(lcd,4, 0);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][0])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 0);
+    setSerialCursor(lcd,4, 0);
   }
   lcd.print(octoModeGauges[octoIndex][0]->currentValue, octoModeGauges[octoIndex][0]->decimalPlaces);
 
-  lcd.setCursor(4, 1);
+  setSerialCursor(lcd,4, 1);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][1])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 1);
+    setSerialCursor(lcd,4, 1);
   }
   lcd.print(octoModeGauges[octoIndex][1]->currentValue, octoModeGauges[octoIndex][1]->decimalPlaces);
 
-  lcd.setCursor(4, 2);
+  setSerialCursor(lcd,4, 2);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][2])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 2);
+    setSerialCursor(lcd,4, 2);
   }
   lcd.print(octoModeGauges[octoIndex][2]->currentValue, octoModeGauges[octoIndex][2]->decimalPlaces);
 
-  lcd.setCursor(4, 3);
+  setSerialCursor(lcd,4, 3);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][3])) {
     lcd.print(F("     "));
-    lcd.setCursor(4, 3);
+    setSerialCursor(lcd,4, 3);
   }
   lcd.print(octoModeGauges[octoIndex][3]->currentValue, octoModeGauges[octoIndex][3]->decimalPlaces);
 
-  lcd.setCursor(15, 0);
+  setSerialCursor(lcd,15, 0);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][4])) {
     lcd.print(F("     "));
-    lcd.setCursor(15, 0);
+    setSerialCursor(lcd,15, 0);
   }
   lcd.print(octoModeGauges[octoIndex][4]->currentValue, octoModeGauges[octoIndex][4]->decimalPlaces);
 
-  lcd.setCursor(15, 1);
+  setSerialCursor(lcd,15, 1);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][5])) {
     lcd.print(F("     "));
-    lcd.setCursor(15, 1);
+    setSerialCursor(lcd,15, 1);
   }
   lcd.print(octoModeGauges[octoIndex][5]->currentValue, octoModeGauges[octoIndex][5]->decimalPlaces);
 
-  lcd.setCursor(15, 2);
+  setSerialCursor(lcd,15, 2);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][6])) {
     lcd.print(F("     "));
-    lcd.setCursor(15, 2);
+    setSerialCursor(lcd,15, 2);
   }
   lcd.print(octoModeGauges[octoIndex][6]->currentValue, octoModeGauges[octoIndex][6]->decimalPlaces);
 
-  lcd.setCursor(15, 3);
+  setSerialCursor(lcd, 15, 3);
   if(is_current_value_shorter(*octoModeGauges[octoIndex][7])) {
     lcd.print(F("     "));
-    lcd.setCursor(15, 3);
+    setSerialCursor(lcd, 15, 3);
   }
   lcd.print(octoModeGauges[octoIndex][7]->currentValue, octoModeGauges[octoIndex][7]->decimalPlaces);
 }
@@ -721,7 +748,7 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
     //relax homeboy
   }*/
   if(true){
-    lcd.setCursor(column, row);
+    setSerialCursor(lcd, column, row);
     
     //delete previous bar if it is too long
     //todo optimize to only delete the needful
@@ -744,7 +771,7 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
       else {
         lcd.write("           ");           //hard-coded value for quad mode
       }
-      lcd.setCursor(column, row);
+      setSerialCursor(lcd, column, row);
     }
 
     //calculate bars
@@ -766,12 +793,16 @@ void draw_bar(EngineVariable engineVar, byte row, byte column) {
       partialBars = 0;
     }
     
-    lcd.setCursor(column, row);
+    setSerialCursor(lcd, column, row);
     for(int i = 0; i < fullBars; i++) {
-      lcd.write(byte(4));
+      //lcd.write(byte(4));
+      lcd.write((uint8_t)4);
+      
     }
     if(partialBars > 0) {
-      lcd.write(byte(partialBars - 1));    
+      //Serial.println("printing a partial bar " + partialBars);
+      //lcd.write(byte(partialBars - 1));
+      lcd.write((uint8_t)partialBars-1);
     }  
   }  
 }
@@ -797,5 +828,28 @@ bool calculate_error_light() {
     }
   }
   return inError;
+}
+
+void setSerialCursor(SoftwareSerial lcd, int column, int row) {
+  lcd.write(0xFE);
+  lcd.write(0x47);
+  lcd.write((byte)column+1);
+  lcd.write((byte)row+1);
+}
+
+void clearSerialLCD(SoftwareSerial lcd) {
+  lcd.write(0xFE);
+  lcd.write(0x58);
+}
+
+//does not work with zeros e.g. needs at least one dot drawn on each row
+void createCustomSerialChar(SoftwareSerial lcd, int pos, byte data[]) {
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)pos);
+  for(int i = 0; i < 8; i++) {
+    lcd.write(data[i]);
+  }
+  delay(10); 
 }
 
