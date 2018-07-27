@@ -184,27 +184,6 @@ void setup() {
   pinMode(MODE_PIN, INPUT_PULLUP);
   pinMode(GAUGE_PIN, INPUT_PULLUP);
   //digitalWrite(MODE_PIN, INPUT_PULLUP);
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  //lcd.createChar(0, fill1);
-  //lcd.createChar(1, fill2);
-  //lcd.createChar(2, fill3);
-  //lcd.createChar(3, fill4);
-  //lcd.createChar(4, fill5);
-  //lcd.createChar(5, fillMiddle);
   
   octoModeGauges[0][0] = &engine_rpm;
   octoModeGauges[0][1] = &engine_map;
@@ -233,8 +212,6 @@ void setup() {
   quadModeGauges[1][1] = &engine_afr;
   quadModeGauges[1][2] = &engine_clt;
   quadModeGauges[1][3] = &engine_iat;
-
-
   
   allGauges[0] = &engine_map;
   allGauges[1] = &engine_rpm;
@@ -277,78 +254,25 @@ void setup() {
   lcd.write(255);
   delay(10);      
 
-  //lcd.write(0xFE);
-  //lcd.write(0x58);
-
-  // create a custom character
-  // fill 1  
+  // set the backlight color
   lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)0);     // location #0
-  for(int i = 0; i < 8; i++) {
-    lcd.write(fill1[i]);
-  }
-  delay(10);
-
-  // create a custom character
-  // fill 2  
-  lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)1);     // location #1
-  for(int i = 0; i < 8; i++) {
-    lcd.write(fill2[i]);
-  }
-  delay(10);
-
-  // create a custom character
-  // fill 3  
-  lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)2);     // location #2
-    for(int i = 0; i < 8; i++) {
-    lcd.write(fill3[i]);
-  }
-  delay(10);
-
-  // create a custom character
-  // fill 4  
-  lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)3);     // location #3
-    for(int i = 0; i < 8; i++) {
-    lcd.write(fill4[i]);
-  }
-  delay(10);
-
-  // create a custom character
-  // fill 5  
-  lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)4);     // location #4
-  for(int i = 0; i < 8; i++) {
-    lcd.write(fill5[i]);
-  }
+  lcd.write(0xD0);
+  lcd.write(255);         // red 
+  lcd.write((uint8_t)0);  // green
+  lcd.write((uint8_t)0);  // blue
   delay(10);
   
-  // create a custom character
-  // fill middle  
-  lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)5);     // location #4
-  for(int i = 0; i < 8; i++) {
-    lcd.write(fillMiddle[i]);
-  }
-  delay(10);
-
-
-
-
-
+  createCustomSerialChar(lcd, 0, fill1);
+  createCustomSerialChar(lcd, 1, fill2);
+  createCustomSerialChar(lcd, 2, fill3);
+  createCustomSerialChar(lcd, 3, fill4);
+  createCustomSerialChar(lcd, 4, fill5);
+  createCustomSerialChar(lcd, 5, fillMiddle);
+ 
   clearSerialLCD(lcd);
 
   setSerialCursor(lcd, 0, 0);
   lcd.print("Starting up...");
-
 
   Serial.begin(115200);
   while (CAN_OK != CAN.begin(CAN_500KBPS)) {
@@ -359,18 +283,6 @@ void setup() {
     setSerialCursor(lcd,0, 0);    
     lcd.print(F("Connected to ECU"));
     setSerialCursor(lcd,0, 0);    
-
-  //lcd.clear();
-  //lcd.write(0xFE);
-  //lcd.write(0x58);
-
-
-  Serial.println((uint8_t)4);
-
-  /*currentModeButton = digitalRead(MODE_PIN);
-  previousModeButton = currentModeButton;
-  Serial.println(currentModeButton);
-  Serial.println(previousModeButton);*/
 }
 
 void loop() {
@@ -928,5 +840,16 @@ void setSerialCursor(SoftwareSerial lcd, int column, int row) {
 void clearSerialLCD(SoftwareSerial lcd) {
   lcd.write(0xFE);
   lcd.write(0x58);
+}
+
+//does not work with zeros e.g. needs at least one dot drawn on each row
+void createCustomSerialChar(SoftwareSerial lcd, int pos, byte data[]) {
+  lcd.write(0xFE);
+  lcd.write(0x4E);
+  lcd.write((uint8_t)pos);
+  for(int i = 0; i < 8; i++) {
+    lcd.write(data[i]);
+  }
+  delay(10); 
 }
 
